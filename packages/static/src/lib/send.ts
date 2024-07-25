@@ -13,7 +13,7 @@ import {
 
 type SetHeaders = (res: Response, path: string, stats: Stats) => void;
 
-export type SendOptions = {
+export interface SendOptions {
   /**
    * Root directory to restrict file access.
    */
