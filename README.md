@@ -76,6 +76,7 @@ There are many, many things to be done if Zipadee is ever going to be real, but 
     res.body = `<script nonce=${getNonce(res)}>...</script>`;
   });
   ```
+
 - [ ] `@zipadee/etag` (or `@zipadee/cache`?) - easily set ETag header from content. Maybe it could be used by `@zipadee/static`.
 - [ ] http2: test against Node's compatability layer, offer a switch?
   - Local cert generation for local HTTP/2 dev servers?

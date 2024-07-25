@@ -28,6 +28,7 @@
         "./packages/cors:build",
         "./packages/router:build",
         "./packages/static:build",
+        "./packages/trpc:build",
         "./packages/zipadee:build"
       ]
     },
@@ -37,6 +38,7 @@
         "./packages/cors:test",
         "./packages/router:test",
         "./packages/static:test",
+        "./packages/trpc:test",
         "./packages/zipadee:test"
       ]
     }
