@@ -1,0 +1,44 @@
+{
+  "name": "@zipadee/monorepo",
+  "private": "true",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit",
+    "format": "npm run format:fix",
+    "format:check": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --check",
+    "format:fix": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
+    "ignore-sync": "ignore-sync ."
+  },
+  "dependencies": {
+    "wireit": "^0.14.5"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "prettier-plugin-curly": "^0.2.2",
+    "typescript": "^5.5.3"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "./packages/core:build",
+        "./packages/cors:build",
+        "./packages/router:build",
+        "./packages/static:build",
+        "./packages/zipadee:build"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "./packages/core:test",
+        "./packages/cors:test",
+        "./packages/router:test",
+        "./packages/static:test",
+        "./packages/zipadee:test"
+      ]
+    }
+  }
+}
