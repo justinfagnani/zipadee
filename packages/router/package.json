@@ -1,6 +1,6 @@
 {
   "name": "@zipadee/router",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -9,8 +9,18 @@
   },
   "keywords": [],
   "author": "",
+  "homepage": "https://github.com/justinfagnani/zipadee#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justinfagnani/zipadee.git",
+    "directory": "packages/router"
+  },
   "license": "MIT",
-  "description": "",
+  "description": "Router middleware for Zipadee",
+  "files": [
+    "/index.{d.ts.map,d.ts,js.map,js}",
+    "/lib/"
+  ],
   "devDependencies": {
     "@types/accepts": "^1.3.7",
     "@types/node": "^20.14.10",
@@ -43,7 +53,7 @@
     }
   },
   "dependencies": {
-    "@zipadee/core": "^0.0.1",
+    "@zipadee/core": "^0.0.3",
     "urlpattern-polyfill": "^10.0.0"
   }
 }
