@@ -1,6 +1,6 @@
 {
   "name": "@zipadee/trpc",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -54,6 +54,6 @@
   },
   "dependencies": {
     "@trpc/server": "^10.45.2",
-    "@zipadee/core": "^0.0.4"
+    "@zipadee/core": "^0.0.5"
   }
 }
