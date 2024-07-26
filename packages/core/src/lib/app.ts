@@ -40,11 +40,11 @@ export class App {
       await composedMiddleware(request, response, async () => {});
       await response.respond();
     } catch (e: unknown) {
-      console.error(e);
       if (e instanceof HttpError) {
         response.baseResponse.statusCode = e.status;
         response.body = e.message;
       } else {
+        console.error(e);
         response.baseResponse.statusCode = 500;
       }
     }
