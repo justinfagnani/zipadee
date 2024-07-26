@@ -1,9 +1,18 @@
 /**
  * Module dependencies.
  */
+import {HttpError} from '@zipadee/core';
 import asyncFs from 'node:fs/promises';
 import path from 'node:path';
 import {join, normalize, resolve, sep, isAbsolute} from 'node:path';
+
+export const decodePath = (path: string) => {
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    throw new HttpError(400, 'Failed to decode path');
+  }
+};
 
 /**
  * Returns `true` if the path exists, `false` otherwise.
@@ -14,6 +23,25 @@ export const pathExists = async (targetPath: string) => {
     return true;
   } catch {
     return false;
+  }
+};
+
+/**
+ * Calls `fs.stat` on `filePath` and returns the result. If `fs.stat` throws an
+ * error with code `ENOENT`, `ENAMETOOLONG`, or `ENOTDIR`, it throws an HTTP 404
+ * error. Otherwise, it throws an HTTP 500 error.
+ */
+export const stat = async (filePath: string) => {
+  try {
+    return await asyncFs.stat(filePath);
+  } catch (e) {
+    const err = e as Error & {code: string};
+    const notfound = ['ENOENT', 'ENAMETOOLONG', 'ENOTDIR'];
+
+    if (notfound.includes(err.code)) {
+      throw new HttpError(404);
+    }
+    throw new HttpError(500, 'Internal Server Error');
   }
 };
 
@@ -38,8 +66,8 @@ const UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
  * Resolve `relativePath` against `root` path.
  */
 export const resolvePath = (rootPath: string, relativePath: string) => {
-  let path = relativePath;
-  let root = rootPath;
+  const path = relativePath;
+  const root = rootPath;
 
   if (typeof root !== 'string') {
     throw new TypeError('rootPath must be a string');

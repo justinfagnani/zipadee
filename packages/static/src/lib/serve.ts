@@ -2,8 +2,7 @@ import path from 'node:path';
 import {send, type SendOptions} from './send.js';
 import {HttpError, type Middleware} from '@zipadee/core';
 
-export interface ServeOptions extends SendOptions {
-}
+export interface ServeOptions extends SendOptions {}
 
 /**
  * Serve static files from a `root` directory.

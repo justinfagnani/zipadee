@@ -1,5 +1,5 @@
 {
-  "name": "@zipadee/core",
+  "name": "@zipadee/javascript",
   "version": "0.0.5",
   "type": "module",
   "main": "index.js",
@@ -13,17 +13,16 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/justinfagnani/zipadee.git",
-    "directory": "packages/core"
+    "directory": "packages/javascript"
   },
   "license": "MIT",
-  "description": "The core components of Zipadee, a web server framework for Node.js",
+  "description": "Zipadee middleware for serving JavaScript files",
   "files": [
     "/index.{d.ts.map,d.ts,js.map,js}",
     "/lib/"
   ],
   "devDependencies": {
-    "@types/accepts": "^1.3.7",
-    "@types/cookies": "^0.9.0",
+    "@types/es-module-lexer": "^0.4.1",
     "@types/node": "^20.14.10",
     "@types/supertest": "^6.0.2",
     "supertest": "^7.0.0"
@@ -31,6 +30,9 @@
   "wireit": {
     "build": {
       "command": "tsc",
+      "dependencies": [
+        "../core:build"
+      ],
       "files": [
         "src/**/*.ts",
         "tsconfig.json"
@@ -47,12 +49,13 @@
       "dependencies": [
         "build"
       ],
-      "files": []
+      "files": [
+        "test/fixtures/**/*"
+      ]
     }
   },
   "dependencies": {
-    "accepts": "^1.3.8",
-    "cache-content-type": "^2.0.0",
-    "cookies": "^0.9.1"
+    "@zipadee/core": "^0.0.5",
+    "import-meta-resolve": "^4.1.0"
   }
 }

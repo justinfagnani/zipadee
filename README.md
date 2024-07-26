@@ -28,7 +28,7 @@ Zipadee is inspired by Koa and Express, with the following goals:
 ```ts
 import {App, html} from 'zipadee';
 
-const users = ['Alice', 'Bob']
+const users = ['Alice', 'Bob'];
 
 const app = new App();
 
@@ -37,9 +37,7 @@ app.use(async (req, res) => {
     <h1>Hello world!</h1>
     <h2>Users:</h2>
     <ul>
-      ${users.map((user, i) => html`
-        <li>User ${i}: ${user}</li>
-      `)}
+      ${users.map((user, i) => html` <li>User ${i}: ${user}</li> `)}
     </ul>
   `;
 });

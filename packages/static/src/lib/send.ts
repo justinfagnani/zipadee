@@ -1,12 +1,14 @@
-import {HttpError, type Request, type Response} from '@zipadee/core';
+import {type Request, type Response} from '@zipadee/core';
 import type {Stats} from 'node:fs';
-import {default as asyncFs, default as fs} from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import {
+  decodePath,
   getFileType,
   pathExists,
   pathIsHidden,
   resolvePath as safeResolvePath,
+  stat,
 } from './utils.js';
 
 // Originally ported from https://github.com/koajs/send/blob/master/src/send.ts
@@ -55,7 +57,7 @@ export interface SendOptions {
    * Try to match extensions from passed array to search for file when no extension is sufficed in URL. First found is served. (defaults to false)
    */
   extensions?: string[] | false;
-};
+}
 
 /**
  * Send the file at `path` with the given `options` to the Response.
@@ -66,14 +68,13 @@ export const send = async (
   filePath: string,
   opts: SendOptions = {},
 ): Promise<string | undefined> => {
-  // options
   const root = opts.root ? path.resolve(opts.root) : '';
   const trailingSlash = filePath.at(-1) === '/';
   filePath = filePath.slice(path.parse(filePath).root.length);
   const {index} = opts;
-  const maxage = opts.maxage || opts.maxAge || 0;
-  const immutable = opts.immutable || false;
-  const hidden = opts.hidden || false;
+  const maxage = opts.maxage ?? opts.maxAge ?? 0;
+  const immutable = opts.immutable ?? false;
+  const hidden = opts.hidden ?? false;
   const format = opts.format !== false;
   const extensions = Array.isArray(opts.extensions) ? opts.extensions : false;
   const brotli = opts.brotli !== false;
@@ -85,13 +86,7 @@ export const send = async (
   }
 
   // Normalize and decode path
-  try {
-    filePath = decodeURIComponent(filePath);
-  } catch {
-    res.statusCode = 400;
-    res.statusMessage = 'Failed to decode path';
-    return;
-  }
+  filePath = decodePath(filePath);
 
   // Index file support
   if (index && trailingSlash) {
@@ -144,28 +139,16 @@ export const send = async (
   }
 
   // stat
-  let stats;
-  try {
-    stats = await asyncFs.stat(filePath);
-    // Format the path to serve static file servers
-    // and not require a trailing slash for directories,
-    // so that you can do both `/directory` and `/directory/`
-    if (stats.isDirectory()) {
-      if (!format || !index) {
-        return;
-      }
-      filePath += `/${index}`;
-      stats = await asyncFs.stat(filePath);
+  let stats = await stat(filePath);
+  // Format the path to serve static file servers
+  // and not require a trailing slash for directories,
+  // so that you can do both `/directory` and `/directory/`
+  if (stats.isDirectory()) {
+    if (!format || !index) {
+      return;
     }
-  } catch (e) {
-    const err = e as Error & {code: string};
-    const notfound = ['ENOENT', 'ENAMETOOLONG', 'ENOTDIR'];
-
-    if (notfound.includes(err.code)) {
-      throw new HttpError(404);
-    }
-    // err.status = 500;
-    throw new HttpError(500, 'Internal Server Error');
+    filePath += `/${index}`;
+    stats = await stat(filePath);
   }
 
   // inject headers
