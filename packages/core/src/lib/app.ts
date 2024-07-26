@@ -42,7 +42,7 @@ export class App {
     } catch (e: unknown) {
       if (e instanceof HttpError) {
         response.baseResponse.statusCode = e.status;
-        response.body = e.message;
+        response.baseResponse.write(e.message);
       } else {
         console.error(e);
         response.baseResponse.statusCode = 500;

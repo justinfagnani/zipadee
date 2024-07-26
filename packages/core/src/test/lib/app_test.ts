@@ -2,6 +2,7 @@ import {describe as suite, test} from 'node:test';
 import * as assert from 'node:assert';
 import request from 'supertest';
 import {App} from '../../lib/app.js';
+import {HttpError} from '../../lib/http-error.js';
 
 suite('App', () => {
   test('simple response', async () => {
@@ -28,12 +29,20 @@ suite('App', () => {
     assert.equal(response.status, 404);
   });
 
-  test('errors cause a 500 status', async () => {
+  test('Plain errors cause a 500 status', async () => {
     using app = new App();
     app.use(async (_req, _res, _next) => {
       throw new Error('Oops!');
     });
     await request(app.server).get('/').expect(500);
+  });
+
+  test('HttpError errors use their status and message', async () => {
+    using app = new App();
+    app.use(async (_req, _res, _next) => {
+      throw new HttpError(403);
+    });
+    await request(app.server).get('/').expect(403).expect('Forbidden');
   });
 
   test('composes middleware', async () => {
@@ -61,5 +70,4 @@ suite('App', () => {
 
     assert.equal(response.text, 'A1B1CB2A2');
   });
-
 });
