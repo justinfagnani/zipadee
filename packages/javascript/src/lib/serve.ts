@@ -54,7 +54,7 @@ export const serve = (opts: Options): Middleware => {
   const root =
     opts.root === undefined ? process.cwd() : path.resolve(opts.root);
   const base = opts.base === undefined ? root : resolvePath(root, opts.base);
-  const rootFolderName = opts.rootPathPrefix ?? '/__root__';
+  const rootPathPrefix = opts.rootPathPrefix ?? '/__root__';
   const extensions = opts.extensions ?? ['.js', '.mjs'];
 
   return async (req, res, next) => {
@@ -65,6 +65,11 @@ export const serve = (opts: Options): Middleware => {
 
     let filePath = decodePath(req.path);
 
+    const mountedPath = req.url!.pathname.substring(
+      0,
+      req.url!.pathname.length - filePath.length,
+    );
+
     const parsedPath = path.parse(filePath);
 
     // Only serve JavaScript files
@@ -72,8 +77,8 @@ export const serve = (opts: Options): Middleware => {
       return await next();
     }
 
-    if (filePath.startsWith(rootFolderName)) {
-      filePath = filePath.substring(rootFolderName.length);
+    if (filePath.startsWith(rootPathPrefix)) {
+      filePath = filePath.substring(rootPathPrefix.length);
       filePath = filePath.slice(parsedPath.root.length);
       filePath = resolvePath(root, filePath);
     } else {
@@ -105,12 +110,21 @@ export const serve = (opts: Options): Middleware => {
         // Static import
         const importSpecifier = unescaped || source.substring(start, end);
 
+        // If the specifier is relative or absolute, we don't need to resolve it
+        if (
+          importSpecifier.startsWith('.') ||
+          importSpecifier.startsWith('/')
+        ) {
+          output += `${source.substring(lastIndex, start)}${importSpecifier}`;
+          lastIndex = end;
+          continue;
+        }
+
         const fileURL = new URL(filePath, 'file://');
         const resolvedImportURL = moduleResolve(importSpecifier, fileURL);
         const resolvedImportPath = resolvedImportURL.pathname;
 
         if (!resolvedImportPath.startsWith(root)) {
-          console.log('A', resolvedImportPath);
           throw new HttpError(500);
         }
 
@@ -119,7 +133,8 @@ export const serve = (opts: Options): Middleware => {
           resolvedimport = resolvedImportPath.substring(base.length);
         } else {
           resolvedimport = path.join(
-            rootFolderName,
+            mountedPath,
+            rootPathPrefix,
             resolvedImportPath.substring(root.length),
           );
         }

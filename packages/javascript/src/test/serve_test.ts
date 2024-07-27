@@ -13,7 +13,9 @@ suite('serve()', () => {
       .get('/hello.js')
       .expect(200)
       .expect('Content-Type', /javascript/)
-      .expect(`import '/__root__/node_modules/foo/index.js';\n`);
+      .expect(
+        `import '/__root__/node_modules/foo/index.js';\nimport './good.js';\n`,
+      );
 
     // File outside of base
     await request(app.server)
@@ -39,14 +41,16 @@ suite('serve()', () => {
       .get('/js/hello.js')
       .expect(200)
       .expect('Content-Type', /javascript/)
-      .expect(`import '/__root__/node_modules/foo/index.js';\n`);
+      .expect(
+        `import '/js/__root__/node_modules/foo/index.js';\nimport './good.js';\n`,
+      );
 
     // File outside of base
     await request(app.server)
       .get('/js/__root__/node_modules/foo/index.js')
       .expect(200)
       .expect('Content-Type', /javascript/)
-      .expect(`import '/__root__/node_modules/bar/index.js';\n`);
+      .expect(`import '/js/__root__/node_modules/bar/index.js';\n`);
   });
 
   test('disallows resolved paths outside of root', async () => {
