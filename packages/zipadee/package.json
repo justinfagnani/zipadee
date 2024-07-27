@@ -1,7 +1,7 @@
 {
   "name": "zipadee",
   "description": "Zipadee is a web server framework for Node.js",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -46,9 +46,9 @@
     }
   },
   "dependencies": {
-    "@zipadee/core": "^0.0.7",
-    "@zipadee/cors": "^0.0.7",
-    "@zipadee/router": "^0.0.7",
-    "@zipadee/static": "^0.0.7"
+    "@zipadee/core": "^0.0.8",
+    "@zipadee/cors": "^0.0.8",
+    "@zipadee/router": "^0.0.8",
+    "@zipadee/static": "^0.0.8"
   }
 }
