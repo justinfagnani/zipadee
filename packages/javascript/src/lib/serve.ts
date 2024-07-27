@@ -5,6 +5,7 @@ import {
   resolvePath,
   stat,
 } from '@zipadee/static/lib/utils.js';
+import {send} from '@zipadee/static';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {parse, init} from 'es-module-lexer';
@@ -32,7 +33,9 @@ export interface Options {
   rootPathPrefix?: string;
 
   /**
-   * Array of file extensions to serve. Defaults to `['.js', '.mjs']`.
+   * Array of file extensions to transform. Defaults to `['.js', '.mjs']`.
+   * 
+   * Other extensions are served as plain files.
    */
   extensions?: string[];
 }
@@ -71,11 +74,7 @@ export const serve = (opts: Options): Middleware => {
     );
 
     const parsedPath = path.parse(filePath);
-
-    // Only serve JavaScript files
-    if (!extensions.includes(parsedPath.ext)) {
-      return await next();
-    }
+    const transform = extensions.includes(parsedPath.ext);
 
     if (filePath.startsWith(rootPathPrefix)) {
       filePath = filePath.substring(rootPathPrefix.length);
@@ -94,6 +93,12 @@ export const serve = (opts: Options): Middleware => {
 
     if (stats.isDirectory()) {
       return await next();
+    }
+
+    if (!transform) {
+      const relativePath = path.relative(root, filePath);
+      await send(req, res, relativePath, {root});
+      return;
     }
 
     const source = await fs.readFile(filePath, 'utf8');

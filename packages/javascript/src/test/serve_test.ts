@@ -25,11 +25,14 @@ suite('serve()', () => {
       .expect(`import '/__root__/node_modules/bar/index.js';\n`);
   });
 
-  test('skips non .js files', async () => {
+  test('serves non .js files', async () => {
     using app = new App();
     app.use(serve({root: 'test/fixtures/', base: 'base'}));
 
-    await request(app.server).get('/hello.txt').expect(404);
+    await request(app.server)
+      .get('/hello.txt')
+      .expect(200)
+      .expect('Content-Type', /plain/);
   });
 
   test('can be mounted', async () => {
@@ -58,5 +61,24 @@ suite('serve()', () => {
     app.use(serve({root: 'test/fixtures/', base: 'base'}));
 
     await request(app.server).get('/bad.js').expect(500);
+  });
+
+  test('resolves with import attributes', async () => {
+    using app = new App();
+    app.use(serve({root: 'test/fixtures/', base: 'base'}));
+
+    await request(app.server)
+      .get('/import-css.js')
+      .expect(200)
+      .expect('Content-Type', /javascript/)
+      .expect(
+        `import '/__root__/node_modules/foo/styles.css' with { type: 'css' };\n`,
+      );
+
+    await request(app.server)
+      .get('/__root__/node_modules/foo/styles.css')
+      .expect(200)
+      .expect('Content-Type', /css/)
+      .expect(`:root {\n  color: red;\n}\n`);
   });
 });
