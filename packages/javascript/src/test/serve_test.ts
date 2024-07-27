@@ -25,6 +25,18 @@ suite('serve()', () => {
       .expect(`import '/__root__/node_modules/bar/index.js';\n`);
   });
 
+  test('avoids bugs with confusing base and root', async () => {
+    using app = new App();
+    app.use(serve({root: 'test/fixtures/', base: 'base'}));
+
+    // File with path that could be confused with base.
+    await request(app.server)
+    .get('/__root__/base.js')
+    .expect(200)
+    .expect('Content-Type', /javascript/)
+    .expect(`console.log('hi');\n`);
+  });
+
   test('serves non .js files', async () => {
     using app = new App();
     app.use(serve({root: 'test/fixtures/', base: 'base'}));

@@ -85,7 +85,7 @@ export const serve = (opts: Options): Middleware => {
       filePath = resolvePath(base, filePath);
     }
 
-    if (pathIsHidden(base, filePath)) {
+    if (pathIsHidden(root, filePath)) {
       return await next();
     }
 
