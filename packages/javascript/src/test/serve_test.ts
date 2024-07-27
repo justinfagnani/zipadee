@@ -37,6 +37,19 @@ suite('serve()', () => {
     .expect(`console.log('hi');\n`);
   });
 
+  test('resolves using package exports', async () => {
+    using app = new App();
+    app.use(serve({root: 'test/fixtures/', base: 'base'}));
+
+    await request(app.server)
+      .get('/uses-exports.js')
+      .expect(200)
+      .expect('Content-Type', /javascript/)
+      .expect(
+        `import '/__root__/node_modules/baz/a.mjs';\n`,
+      );
+  });
+
   test('serves non .js files', async () => {
     using app = new App();
     app.use(serve({root: 'test/fixtures/', base: 'base'}));

@@ -34,10 +34,15 @@ export interface Options {
 
   /**
    * Array of file extensions to transform. Defaults to `['.js', '.mjs']`.
-   * 
+   *
    * Other extensions are served as plain files.
    */
-  extensions?: string[];
+  extensions?: Array<string>;
+
+  /**
+   * Array of import conditions to support. Defaults to `['browser', 'import']`.
+   */
+  conditions?: Array<string>;
 }
 
 // TODO:
@@ -59,6 +64,8 @@ export const serve = (opts: Options): Middleware => {
   const base = opts.base === undefined ? root : resolvePath(root, opts.base);
   const rootPathPrefix = opts.rootPathPrefix ?? '/__root__';
   const extensions = opts.extensions ?? ['.js', '.mjs'];
+  const conditionsArray = opts.conditions ?? ['browser', 'import'];
+  const conditions = new Set(conditionsArray);
 
   return async (req, res, next) => {
     if (!(req.method === 'HEAD' || req.method === 'GET')) {
@@ -126,7 +133,11 @@ export const serve = (opts: Options): Middleware => {
         }
 
         const fileURL = new URL(filePath, 'file://');
-        const resolvedImportURL = moduleResolve(importSpecifier, fileURL);
+        const resolvedImportURL = moduleResolve(
+          importSpecifier,
+          fileURL,
+          conditions,
+        );
         const resolvedImportPath = resolvedImportURL.pathname;
 
         if (!resolvedImportPath.startsWith(root)) {
