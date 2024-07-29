@@ -44,6 +44,7 @@ export class Router {
           return;
         }
       }
+      return next();
     };
   }
 }

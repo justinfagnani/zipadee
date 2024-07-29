@@ -36,4 +36,19 @@ suite('Router', () => {
     await request(app.server).get('/foo').expect(404);
     await request(app.server).get('/foo/bar').expect(200).expect('bar');
   });
+
+  test('falls through for non-matched paths', async () => {
+    using app = new App();
+    const router = new Router();
+    router.get('/', async (_req, res) => {
+      res.body = 'root';
+    });
+    app.use(router.routes());
+    app.use(async (_req, res) => {
+      res.body = 'fallback';
+    });
+
+    await request(app.server).get('/').expect(200).expect('root');
+    await request(app.server).get('/foo').expect(200).expect('fallback');
+  });
 });
