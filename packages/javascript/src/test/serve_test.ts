@@ -31,10 +31,10 @@ suite('serve()', () => {
 
     // File with path that could be confused with base.
     await request(app.server)
-    .get('/__root__/base.js')
-    .expect(200)
-    .expect('Content-Type', /javascript/)
-    .expect(`console.log('hi');\n`);
+      .get('/__root__/base.js')
+      .expect(200)
+      .expect('Content-Type', /javascript/)
+      .expect(`console.log('hi');\n`);
   });
 
   test('resolves using package exports', async () => {
@@ -45,9 +45,7 @@ suite('serve()', () => {
       .get('/uses-exports.js')
       .expect(200)
       .expect('Content-Type', /javascript/)
-      .expect(
-        `import '/__root__/node_modules/baz/a.mjs';\n`,
-      );
+      .expect(`import '/__root__/node_modules/baz/a.mjs';\n`);
   });
 
   test('serves non .js files', async () => {
