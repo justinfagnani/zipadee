@@ -8,6 +8,9 @@ export const html = (strings: TemplateStringsArray, ...values: any[]) =>
   new HTMLPartial(strings, values);
 
 const toString = (v: any, currentIndent: number): string => {
+  if (v == null) {
+    return '';
+  }
   if (typeof v === 'string') {
     return escape(v);
   }
@@ -70,7 +73,9 @@ export class HTMLPartial {
 
     for (let i = 0; i < values.length; i++) {
       const v = values[i];
-      if (typeof v === 'string') {
+      if (v == null) {
+        yield '';
+      } else if (typeof v === 'string') {
         yield escape(v);
       } else if (v instanceof HTMLPartial) {
         yield* v;

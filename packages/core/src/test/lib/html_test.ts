@@ -55,6 +55,13 @@ suite('html', () => {
     );
   });
 
+  test('interpolated undefined', async () => {
+    assert.equal(
+      html`<h1>undefined: ${undefined}, null: ${null}</h1>`.toString(),
+      '<h1>undefined: , null: </h1>',
+    );
+  });
+
   test('interpolated array', async () => {
     const items = ['foo', 'bar', 'baz'];
     assert.equal(
@@ -79,6 +86,13 @@ suite('html', () => {
       assert.deepEqual(
         [...html`<h1>Hello ${'World'}!</h1>`],
         ['<h1>Hello ', 'World', '!</h1>'],
+      );
+    });
+
+    test('iteration with undefined', async () => {
+      assert.deepEqual(
+        [...html`<h1>Hello ${undefined}!</h1>`],
+        ['<h1>Hello ', '', '!</h1>'],
       );
     });
 
