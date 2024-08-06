@@ -1,6 +1,6 @@
 {
   "name": "@zipadee/javascript",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -56,8 +56,8 @@
     }
   },
   "dependencies": {
-    "@zipadee/core": "^0.0.10",
-    "@zipadee/static": "^0.0.10",
+    "@zipadee/core": "^0.0.11",
+    "@zipadee/static": "^0.0.11",
     "import-meta-resolve": "^4.1.0"
   }
 }
