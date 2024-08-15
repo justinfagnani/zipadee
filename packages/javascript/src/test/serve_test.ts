@@ -95,7 +95,7 @@ suite('serve()', () => {
       .expect(200)
       .expect('Content-Type', /javascript/)
       .expect(
-        `import '/__root__/node_modules/foo/styles.css' with { type: 'css' };\n`,
+        `import '/__root__/node_modules/foo/styles.css' with {type: 'css'};\n`,
       );
 
     await request(app.server)
@@ -103,5 +103,16 @@ suite('serve()', () => {
       .expect(200)
       .expect('Content-Type', /css/)
       .expect(`:root {\n  color: red;\n}\n`);
+  });
+
+  test.only('adds extensions', async () => {
+    using app = new App();
+    app.use(serve({root: 'test/fixtures/', base: 'base'}));
+
+    await request(app.server)
+      .get('/extensionless.js')
+      .expect(200)
+      .expect('Content-Type', /javascript/)
+      .expect(`import './good.js';\nimport '/good.js';\n`);
   });
 });

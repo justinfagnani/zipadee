@@ -26,6 +26,7 @@
       "dependencies": [
         "./packages/core:build",
         "./packages/cors:build",
+        "./packages/javascript:build",
         "./packages/router:build",
         "./packages/static:build",
         "./packages/trpc:build",
@@ -36,6 +37,7 @@
       "dependencies": [
         "./packages/core:test",
         "./packages/cors:test",
+        "./packages/javascript:test",
         "./packages/router:test",
         "./packages/static:test",
         "./packages/trpc:test",

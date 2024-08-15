@@ -9,7 +9,7 @@ import {send} from '@zipadee/static';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {parse, init} from 'es-module-lexer';
-import {moduleResolve} from 'import-meta-resolve';
+import {moduleResolve, type ErrnoException} from 'import-meta-resolve';
 
 await init;
 
@@ -120,23 +120,40 @@ export const serve = (opts: Options): Middleware => {
       const {t: type, s: start, e: end, n: unescaped} = impt;
       if (type === 1) {
         // Static import
-        const importSpecifier = unescaped || source.substring(start, end);
+        let importSpecifier = unescaped || source.substring(start, end);
 
-        // If the specifier is relative or absolute, we don't need to resolve it
+        let relativeImport = false;
+        let absoluteImport = false;
+
+        // If the specifier is relative or absolute, and has an extension,
+        // we don't need to resolve it
         if (
           importSpecifier.startsWith('.') ||
           importSpecifier.startsWith('/')
         ) {
-          output += `${source.substring(lastIndex, start)}${importSpecifier}`;
-          lastIndex = end;
-          continue;
+          if (path.extname(importSpecifier) === '') {
+            // If we don't have an extension, we need to resolve it, but fix the
+            // resolved path to be relative to the current file
+            relativeImport = importSpecifier.startsWith('.');
+            absoluteImport = importSpecifier.startsWith('/');
+          } else {
+            output += `${source.substring(lastIndex, start)}${importSpecifier}`;
+            lastIndex = end;
+            continue;
+          }
         }
 
         const fileURL = new URL(filePath, 'file://');
-        const resolvedImportURL = moduleResolve(
+        if (absoluteImport) {
+          // If the import is absolute, we need to resolve it relative to the
+          // base path
+          importSpecifier = path.join(base, importSpecifier);
+        }
+        const resolvedImportURL = resolveImport(
           importSpecifier,
           fileURL,
           conditions,
+          true,
         );
         const resolvedImportPath = resolvedImportURL.pathname;
 
@@ -145,7 +162,15 @@ export const serve = (opts: Options): Middleware => {
         }
 
         let resolvedimport: string;
-        if (resolvedImportPath.startsWith(base)) {
+        if (relativeImport) {
+          resolvedimport = path.relative(
+            path.dirname(filePath),
+            resolvedImportPath,
+          );
+          if (!resolvedimport.startsWith('.')) {
+            resolvedimport = './' + resolvedimport;
+          }
+        } else if (resolvedImportPath.startsWith(base)) {
           resolvedimport = resolvedImportPath.substring(base.length);
         } else {
           resolvedimport = path.join(
@@ -163,4 +188,39 @@ export const serve = (opts: Options): Middleware => {
     res.type = 'text/javascript';
     res.body = output + source.substring(lastIndex);
   };
+};
+
+/**
+ * Tries to resolve an import specifier with moduleResolve().
+ *
+ * When `tryExtensions` is true, if resolution fails and the specifier has no
+ * extension, it will try again with a '.js' extension.
+ *
+ * @param importSpecifier
+ * @param fileURL
+ * @param conditions
+ * @returns
+ */
+const resolveImport = (
+  importSpecifier: string,
+  fileURL: URL,
+  conditions: Set<string>,
+  tryExtensions = false,
+) => {
+  try {
+    return moduleResolve(importSpecifier, fileURL, conditions);
+  } catch (e: unknown) {
+    if (
+      tryExtensions &&
+      (e as ErrnoException).code === 'ERR_MODULE_NOT_FOUND' &&
+      path.extname(importSpecifier) === ''
+    ) {
+      try {
+        return moduleResolve(importSpecifier + '.js', fileURL, conditions);
+      } catch (innerError: unknown) {
+        throw e;
+      }
+    }
+    throw e;
+  }
 };

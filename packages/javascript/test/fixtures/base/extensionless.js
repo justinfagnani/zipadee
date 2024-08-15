@@ -1,0 +1,2 @@
+import './good';
+import '/good';
