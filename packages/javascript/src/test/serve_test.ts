@@ -105,7 +105,7 @@ suite('serve()', () => {
       .expect(`:root {\n  color: red;\n}\n`);
   });
 
-  test.only('adds extensions', async () => {
+  test('adds extensions', async () => {
     using app = new App();
     app.use(serve({root: 'test/fixtures/', base: 'base'}));
 
@@ -114,5 +114,16 @@ suite('serve()', () => {
       .expect(200)
       .expect('Content-Type', /javascript/)
       .expect(`import './good.js';\nimport '/good.js';\n`);
+  });
+
+  test('adds extensions', async () => {
+    using app = new App();
+    app.use(serve({root: 'test/fixtures/', base: 'base'}));
+
+    await request(app.server)
+      .get('/module-field.js')
+      .expect(200)
+      .expect('Content-Type', /javascript/)
+      .expect(`import '/__root__/node_modules/module-field/index.mjs';\n`);
   });
 });

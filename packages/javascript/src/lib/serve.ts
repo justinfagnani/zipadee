@@ -9,7 +9,11 @@ import {send} from '@zipadee/static';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {parse, init} from 'es-module-lexer';
-import {moduleResolve, type ErrnoException} from 'import-meta-resolve';
+// import {moduleResolve, type ErrnoException} from 'import-meta-resolve';
+import resolve from 'enhanced-resolve';
+import baseFS from 'fs';
+
+const {CachedInputFileSystem, ResolverFactory} = resolve;
 
 await init;
 
@@ -65,7 +69,15 @@ export const serve = (opts: Options): Middleware => {
   const rootPathPrefix = opts.rootPathPrefix ?? '/__root__';
   const extensions = opts.extensions ?? ['.js', '.mjs'];
   const conditionsArray = opts.conditions ?? ['browser', 'import'];
-  const conditions = new Set(conditionsArray);
+  // const conditions = new Set(conditionsArray);
+
+  const resolver = ResolverFactory.createResolver({
+    fileSystem: new CachedInputFileSystem(baseFS, 4000),
+    roots: [root, base],
+    extensions: ['.js', '.json'],
+    conditionNames: conditionsArray,
+    mainFields: ['module', 'browser', 'main'],
+  });
 
   return async (req, res, next) => {
     if (!(req.method === 'HEAD' || req.method === 'GET')) {
@@ -149,12 +161,24 @@ export const serve = (opts: Options): Middleware => {
           // base path
           importSpecifier = path.join(base, importSpecifier);
         }
-        const resolvedImportURL = resolveImport(
-          importSpecifier,
-          fileURL,
-          conditions,
-          true,
-        );
+        const resolveFromPath = path.dirname(filePath);
+        const resolvedImportURL = await new Promise<URL>((res, rej) => {
+          resolver.resolve(
+            {},
+            resolveFromPath,
+            importSpecifier,
+            {},
+            (err, result) => {
+              if (err) {
+                rej(err);
+              } else if (result === undefined || result === false) {
+                rej(new Error('Could not resolve import'));
+              } else {
+                res(new URL(result, fileURL));
+              }
+            },
+          );
+        });
         const resolvedImportPath = resolvedImportURL.pathname;
 
         if (!resolvedImportPath.startsWith(root)) {
@@ -188,39 +212,4 @@ export const serve = (opts: Options): Middleware => {
     res.type = 'text/javascript';
     res.body = output + source.substring(lastIndex);
   };
-};
-
-/**
- * Tries to resolve an import specifier with moduleResolve().
- *
- * When `tryExtensions` is true, if resolution fails and the specifier has no
- * extension, it will try again with a '.js' extension.
- *
- * @param importSpecifier
- * @param fileURL
- * @param conditions
- * @returns
- */
-const resolveImport = (
-  importSpecifier: string,
-  fileURL: URL,
-  conditions: Set<string>,
-  tryExtensions = false,
-) => {
-  try {
-    return moduleResolve(importSpecifier, fileURL, conditions);
-  } catch (e: unknown) {
-    if (
-      tryExtensions &&
-      (e as ErrnoException).code === 'ERR_MODULE_NOT_FOUND' &&
-      path.extname(importSpecifier) === ''
-    ) {
-      try {
-        return moduleResolve(importSpecifier + '.js', fileURL, conditions);
-      } catch (innerError: unknown) {
-        throw e;
-      }
-    }
-    throw e;
-  }
 };
