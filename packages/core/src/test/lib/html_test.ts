@@ -74,6 +74,11 @@ suite('html', () => {
     );
   });
 
+  test('interpolated array with undefined', async () => {
+    const items = ['foo', 'bar', 'baz'];
+    assert.equal(html`${items}`.toString(), 'foobarbaz');
+  });
+
   test('unsafeHTML', async () => {
     assert.equal(
       html`<h1>Hello ${unsafeHTML('<span>World</span>')}!</h1>`.toString(),
@@ -92,6 +97,13 @@ suite('html', () => {
     test('iteration with undefined', async () => {
       assert.deepEqual(
         [...html`<h1>Hello ${undefined}!</h1>`],
+        ['<h1>Hello ', '', '!</h1>'],
+      );
+    });
+
+    test('iteration with array with undefined', async () => {
+      assert.deepEqual(
+        [...html`<h1>Hello ${[undefined]}!</h1>`],
         ['<h1>Hello ', '', '!</h1>'],
       );
     });

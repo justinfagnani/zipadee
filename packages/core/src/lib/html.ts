@@ -72,70 +72,33 @@ export class HTMLPartial {
     yield this.strings[0];
 
     for (let i = 0; i < values.length; i++) {
-      const v = values[i];
-      if (v == null) {
-        yield '';
-      } else if (typeof v === 'string') {
-        yield escape(v);
-      } else if (v instanceof HTMLPartial) {
-        yield* v;
-      } else if (Array.isArray(v)) {
-        yield* yieldArray(v);
-      } else if (v instanceof UnsafeHTML) {
-        yield v.value;
-      } else if (typeof (v as any).then === 'function') {
-        yield v as Promise<RenderResult>;
-      } else {
-        yield escape(String(v));
-      }
+      yield* yieldValue(values[i]);
       yield this.strings[i + 1];
     }
   }
-
-  // toStream(): ReadableStream {
-  //   let closed = false;
-  //   let waiting = false;
-  //   let currentIterator;
-
-  //     /**
-  //  * A stack of open iterators.
-  //  *
-  //  * We need to keep this as instance state because we can pause and resume
-  //  * reading values at any time and can't guarantee to run iterators to
-  //  * completion in any one loop.
-  //  */
-  // const iterators = [result[Symbol.iterator]()];
-
-  //   return new ReadableStream({
-  //     pull(controller) {
-  //       for (const part of parts) {
-  //         controller.enqueue(part);
-  //       }
-  //       controller.close();
-  //     },
-  //   });
-
-  // }
 }
 
-// const handlePromise = async (value: Promise<HTMLValue>): string => {
-// };
+const yieldValue = function* (v: unknown): RenderResult {
+  if (v == null) {
+    yield '';
+  } else if (typeof v === 'string') {
+    yield escape(v);
+  } else if (v instanceof HTMLPartial) {
+    yield* v;
+  } else if (Array.isArray(v)) {
+    yield* yieldArray(v);
+  } else if (v instanceof UnsafeHTML) {
+    yield v.value;
+  } else if (typeof (v as any).then === 'function') {
+    yield v as Promise<RenderResult>;
+  } else {
+    yield escape(String(v));
+  }
+};
 
 const yieldArray = function* (array: Array<unknown>): RenderResult {
   for (const v of array) {
-    if (typeof v === 'string') {
-      yield escape(v);
-    } else if (v instanceof HTMLPartial) {
-      yield* v;
-    } else if (Array.isArray(v)) {
-      yield* yieldArray(v);
-    } else if (v instanceof UnsafeHTML) {
-      yield v.value;
-    } else if (typeof (v as any).then === 'function') {
-      yield v as Promise<RenderResult>;
-    } else {
-      yield escape(String(v));
-    }
+    yield* yieldValue(v);
   }
 };
 
