@@ -1,6 +1,6 @@
 {
   "name": "@zipadee/router",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -52,7 +52,7 @@
     }
   },
   "dependencies": {
-    "@zipadee/core": "^0.0.15",
+    "@zipadee/core": "^0.0.16",
     "urlpattern-polyfill": "^10.0.0"
   }
 }
