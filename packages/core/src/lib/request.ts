@@ -73,6 +73,9 @@ export class Request {
    * The origin of the request URL.
    */
   get origin() {
+    if (this.host === undefined) {
+      return undefined;
+    }
     return `${this.protocol}://${this.host}`;
   }
 
@@ -82,14 +85,14 @@ export class Request {
    * When the `trustProxy` setting is enabled the X-Forwarded-Proto header will
    * be used.
    */
-  get protocol() {
+  get protocol(): string {
     // When the protocol is https, the socket will be a TLSSocket
     // https://nodejs.org/api/tls.html#tlssocketencrypted
     if ((this.#req.socket as TLSSocket).encrypted) {
       return 'https';
     }
     if (this.#trustProxy && this.getHeader('X-Forwarded-Proto')) {
-      return this.getSingleHeader('X-Forwarded-Proto');
+      return this.getSingleHeader('X-Forwarded-Proto') ?? 'http';
     }
     return 'http';
   }
@@ -104,16 +107,16 @@ export class Request {
     return this.getSingleHeader('Host');
   }
 
-  get url() {
+  get url(): URL {
     if (this.#req.url === undefined) {
-      return undefined;
+      throw new Error('Invalid Request. `url` is undefined');
     }
     this.#url = new URL(this.#req.url, this.origin);
     return this.#url;
   }
 
   get path(): string {
-    return this.#path ?? this.url?.pathname ?? '/';
+    return this.#path ?? this.url.pathname ?? '/';
   }
 
   set path(value: string | undefined) {
