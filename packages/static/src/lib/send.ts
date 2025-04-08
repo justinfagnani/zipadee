@@ -173,6 +173,6 @@ export const send = async (
     res.type = getFileType(filePath, encodingExt);
   }
   const handle = await fs.open(filePath, 'r');
-  res.body = handle.createReadStream();
+  res.body = handle.createReadStream({autoClose: true});
   return filePath;
 };
