@@ -24,7 +24,10 @@
     "build": {
       "command": "tsc",
       "dependencies": [
-        "../core:build"
+        "../core:build",
+        "../cors:build",
+        "../router:build",
+        "../static:build"
       ],
       "files": [
         "src/**/*.ts",
