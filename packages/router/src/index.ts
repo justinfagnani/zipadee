@@ -1,17 +1,7 @@
-import type {
-  HttpMethod,
-  Middleware,
-  NextFunction,
-  Request,
-  Response,
-} from '@zipadee/core';
+import type {Middleware, NextFunction, Request, Response} from '@zipadee/core';
 import {URLPattern} from 'urlpattern-polyfill';
-
-interface RouteInfo {
-  method: HttpMethod;
-  pattern: URLPattern;
-  middleware: RouterMiddleware;
-}
+import {URLPatternList} from './lib/url-pattern-list.js';
+import type {URLPatternListMatch} from './lib/url-pattern-list.js';
 
 export type RouterMiddleware = (
   req: Request,
@@ -21,28 +11,40 @@ export type RouterMiddleware = (
 ) => void;
 
 export class Router {
-  #routes: Array<RouteInfo> = [];
+  #patternListGet: URLPatternList<RouterMiddleware>;
+  #patternListPost: URLPatternList<RouterMiddleware>;
+
+  constructor() {
+    this.#patternListGet = new URLPatternList<RouterMiddleware>();
+    this.#patternListPost = new URLPatternList<RouterMiddleware>();
+  }
 
   get(pathname: string, middleware: RouterMiddleware): void {
     const urlPattern = new URLPattern({pathname});
-    this.#routes.push({method: 'GET', pattern: urlPattern, middleware});
+    this.#patternListGet.addPattern(urlPattern, middleware);
   }
 
   post(pathname: string, middleware: RouterMiddleware): void {
     const urlPattern = new URLPattern({pathname});
-    this.#routes.push({method: 'POST', pattern: urlPattern, middleware});
+    this.#patternListPost.addPattern(urlPattern, middleware);
   }
 
   routes(): Middleware {
     return async (req, res, next) => {
       const {path, method, origin} = req;
-      for (const route of this.#routes) {
-        if (route.method === method && route.pattern.test(path, origin)) {
-          const params = route.pattern.exec(path, origin);
-          await route.middleware(req, res, next, params!);
-          return;
-        }
+      let matchedRoute: URLPatternListMatch<RouterMiddleware> | null = null;
+
+      if (method === 'GET') {
+        matchedRoute = this.#patternListGet.match(path, origin);
+      } else if (method === 'POST') {
+        matchedRoute = this.#patternListPost.match(path, origin);
       }
+
+      if (matchedRoute) {
+        await matchedRoute.value(req, res, next, matchedRoute.result);
+        return;
+      }
+
       return next();
     };
   }
