@@ -20,7 +20,7 @@ Zipadee is inspired by Koa and Express, with the following goals:
 - Great TypeScript support:
   - Written in TypeScript so typings are always included and accurate
   - Objects have fixed shapes that are easy to type
-- Safe: The easist way to repond with HTML is escaped by default to protect
+- Safe: The easiest way to respond with HTML is escaped by default to protect
   against XSS
 - Convenient: The most common needs are easy to address, whether with a built-in
   feature or first-class middleware.
@@ -156,7 +156,7 @@ the need for a separate HTML template system like Liquid or Nunjucks:
 - Pretty-ish-printing: Templates can be automatically dedented and nested
   templates re-indented when a nicer looking output is desired.
 - Asynchronous templates with streaming support: Zipadee streams each chunk of a
-  template as its ready, and automatically waits for Primises in the stream.
+  template as its ready, and automatically waits for Promises in the stream.
 
   ```ts
   app.use(async (req, res) => {
@@ -198,16 +198,35 @@ a Request's URL object, but the Request's `path`, so all middleware should use
 the `path` property to make sure that it can be mounted properly. Because of how
 important that is, `mount()` is built-in.
 
+### First-party middleware and utilities
+
+This monorepo contains several useful utilities as separate packages:
+
+- [@zipadee/core](./packages/core/README.md): The core web server
+- [@zipadee/cors](./packages/cors/README.md): CORS middleware
+- [@zipadee/dev-server](./packages/dev-server/README.md): A simple dev server
+  CLI that combines the static and javascript middleware.
+- [@zipadee/javascript](./packages/javascript/README.md): Middleware that
+  rewrites JavaScript imports to be browser compatible
+- [@zipadee/router](./packages/router/README.md): Router middleware
+- [@zipadee/static](./packages/static/README.md): Static file serving middleware
+  and utilities
+- [@zipadee/trpc](./packages/trpc/README.md): tRPC middleware
+- [zipadee](./packages/zipadee/README.md): A convenience package that re-exports
+  core, cors, router, and static.
+
 ## TODO
 
-There are many, many things to be done if Zipadee is ever going to be real, but here's a few of them:
+There are many, many things to be done if Zipadee is ever going to be real, but
+here's a few of them:
 
 - [ ] Web site
 - [ ] Finish `@zipadee/static`
 - [ ] Finish `@zipadee/router`
-- [ ] Benchmarks (Use Fastify's? It's maye too simple)
+- [ ] Benchmarks (Use Fastify's? It's maybe too simple)
 - [ ] Body parsers (and JSON Schema validation for JSON bodies?)
-- [ ] `@zipadee/csp` package that makes it easy to set CSP headers and to create nonces and use them in other middleware.
+- [ ] `@zipadee/csp` package that makes it easy to set CSP headers and to create
+  nonces and use them in other middleware.
 
   ```ts
   import {getNonce} from '@zipadee/csp';
@@ -217,8 +236,9 @@ There are many, many things to be done if Zipadee is ever going to be real, but 
   });
   ```
 
-- [ ] `@zipadee/etag` (or `@zipadee/cache`?) - easily set ETag header from content. Maybe it could be used by `@zipadee/static`.
-- [ ] http2: test against Node's compatability layer, offer a switch?
+- [ ] `@zipadee/etag` (or `@zipadee/cache`?) - easily set ETag header from
+  content. Maybe it could be used by `@zipadee/static`.
+- [ ] http2: test against Node's compatibility layer, offer a switch?
   - Local cert generation for local HTTP/2 dev servers?
 - [ ] `@zipadee/compress` midleware
 - [ ] `@zipadee/trpc` midleware

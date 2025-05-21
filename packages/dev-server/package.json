@@ -1,11 +1,13 @@
 {
-  "name": "@zipadee/javascript",
+  "name": "@zipadee/dev-server",
+  "description": "A lightweight development server for modern web apps.",
   "version": "0.0.17",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "build": "wireit",
-    "test": "wireit"
+    "test": "wireit",
+    "start": "wireit"
   },
   "keywords": [],
   "author": "",
@@ -13,25 +15,24 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/justinfagnani/zipadee.git",
-    "directory": "packages/javascript"
+    "directory": "packages/dev-server"
   },
   "license": "MIT",
-  "description": "Zipadee middleware for serving JavaScript files",
+  "bin": {
+    "zpd": "./bin/cli.js"
+  },
   "files": [
     "/index.{d.ts.map,d.ts,js.map,js}",
-    "/lib/"
+    "/bin/"
   ],
-  "devDependencies": {
-    "@types/es-module-lexer": "^0.4.3",
-    "@types/node": "^22.15.17",
-    "@types/supertest": "^6.0.2",
-    "supertest": "^7.0.0"
-  },
   "wireit": {
     "build": {
       "command": "tsc",
       "dependencies": [
         "../core:build",
+        "../cors:build",
+        "../javascript:build",
+        "../router:build",
         "../static:build"
       ],
       "files": [
@@ -41,8 +42,7 @@
       "output": [
         "index.{js,js.map,d.ts,d.ts.map}",
         ".tsbuildinfo",
-        "lib",
-        "test/**/*_test.{js,js.map,d.ts,d.ts.map}"
+        "lib"
       ],
       "clean": "if-file-deleted"
     },
@@ -51,15 +51,24 @@
       "dependencies": [
         "build"
       ],
-      "files": [
-        "test/fixtures/**/*"
+      "files": []
+    },
+    "start": {
+      "command": "node --enable-source-maps index.js",
+      "dependencies": [
+        "build"
       ]
     }
   },
   "dependencies": {
     "@zipadee/core": "^0.0.17",
-    "@zipadee/static": "^0.0.17",
-    "enhanced-resolve": "^5.17.1",
-    "es-module-lexer": "^1.5.4"
+    "@zipadee/cors": "^0.0.17",
+    "@zipadee/javascript": "^0.0.17",
+    "@zipadee/router": "^0.0.17",
+    "@zipadee/static": "^0.0.17"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "dedent": "^1.6.0"
   }
 }

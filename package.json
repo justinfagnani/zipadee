@@ -26,6 +26,7 @@
       "dependencies": [
         "./packages/core:build",
         "./packages/cors:build",
+        "./packages/dev-server:build",
         "./packages/javascript:build",
         "./packages/router:build",
         "./packages/static:build",

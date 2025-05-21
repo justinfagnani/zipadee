@@ -79,18 +79,18 @@ export const resolvePath = (rootPath: string, relativePath: string) => {
 
   // Paths cannot contain NULL bytes
   if (path.indexOf('\0') !== -1) {
-    throw new Error('Malicious Path');
+    throw new Error(`Malicious Path: ${path}`);
   }
 
   // relativePath must not be absolute.
   // TODO: change this to make absolute paths relative to root?
   if (isAbsolute(path)) {
-    throw new Error('Malicious Path');
+    throw new Error(`Malicious Path: ${path}`);
   }
 
   // relativePath must not traverse above root
   if (UP_PATH_REGEXP.test(normalize('.' + sep + path))) {
-    throw new Error('Malicious Path');
+    throw new Error(`Malicious Path: ${path}`);
   }
 
   // join the relative path

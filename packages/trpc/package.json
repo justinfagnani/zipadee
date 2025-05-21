@@ -22,7 +22,7 @@
     "/lib/"
   ],
   "devDependencies": {
-    "@types/node": "^20.14.10",
+    "@types/node": "^22.15.17",
     "@types/supertest": "^6.0.2",
     "supertest": "^7.0.0"
   },
