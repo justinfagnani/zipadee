@@ -41,7 +41,8 @@
       "output": [
         "index.{js,js.map,d.ts,d.ts.map}",
         ".tsbuildinfo",
-        "lib"
+        "lib",
+        "test/**/*_test.{js,js.map,d.ts,d.ts.map}"
       ],
       "clean": "if-file-deleted"
     },
