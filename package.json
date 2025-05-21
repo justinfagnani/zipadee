@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "prettier": "^3.3.3",
-    "prettier-plugin-curly": "^0.2.2",
+    "prettier-plugin-curly": "^0.3.2",
     "typescript": "^5.5.3"
   },
   "wireit": {

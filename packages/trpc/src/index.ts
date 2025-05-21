@@ -1,23 +1,20 @@
-import {type AnyRouter} from '@trpc/server';
+import {type AnyTRPCRouter} from '@trpc/server';
 import {
-  type NodeHTTPHandlerOptions,
   nodeHTTPRequestHandler,
+  type NodeHTTPRequest,
+  type NodeHTTPRequestHandlerOptions,
+  type NodeHTTPResponse,
+  type NodeHTTPHandlerOptions,
 } from '@trpc/server/adapters/node-http';
 import type {Middleware} from '@zipadee/core';
-import {IncomingMessage, ServerResponse} from 'node:http';
 
-export type Options<TRouter extends AnyRouter> = Omit<
-  NodeHTTPHandlerOptions<
-    TRouter,
-    IncomingMessage,
-    ServerResponse<IncomingMessage>
-  >,
+export type Options<TRouter extends AnyTRPCRouter> = Omit<
+  NodeHTTPHandlerOptions<TRouter, NodeHTTPRequest, NodeHTTPResponse>,
   'middleware'
-> &
-  object;
+>;
 
 export const serveTRPC =
-  <TRouter extends AnyRouter>(opts: Options<TRouter>): Middleware =>
+  <TRouter extends AnyTRPCRouter>(opts: Options<TRouter>): Middleware =>
   async (req, res, _next) => {
     // Zipadee uses 404 as a default status but some logic in
     // nodeHTTPRequestHandler assumes default status of 200.
@@ -31,5 +28,9 @@ export const serveTRPC =
       req: req.baseRequest,
       res: res.baseResponse,
       path,
-    });
+    } as NodeHTTPRequestHandlerOptions<
+      TRouter,
+      NodeHTTPRequest,
+      NodeHTTPResponse
+    >);
   };

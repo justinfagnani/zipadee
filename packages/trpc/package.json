@@ -52,7 +52,7 @@
     }
   },
   "dependencies": {
-    "@trpc/server": "^10.45.2",
+    "@trpc/server": "^11.1.2",
     "@zipadee/core": "^0.0.16"
   }
 }
