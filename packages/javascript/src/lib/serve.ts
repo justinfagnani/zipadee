@@ -182,7 +182,11 @@ export const serve = (opts: Options): Middleware => {
         const resolvedImportPath = resolvedImportURL.pathname;
 
         if (!resolvedImportPath.startsWith(root)) {
-          throw new HttpError(500);
+          throw new HttpError(
+            500,
+            undefined,
+            `Attempted to resolve import outside of root:\n  root: ${root}\n  resolved: ${resolvedImportPath}`
+          );
         }
 
         let resolvedimport: string;
