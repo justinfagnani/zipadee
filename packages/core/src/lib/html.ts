@@ -11,6 +11,17 @@ const isIterable = (value: unknown): value is Iterable<unknown> =>
   Array.isArray(value) ||
   typeof (value as any)?.[Symbol.iterator] === 'function';
 
+/**
+ * Converts a value to a string, escaping it if necessary.
+ *
+ * - If the value is an instance of `HTMLPartial`, it calls its `toString`
+ *   method with the current indentation.
+ * - If the value is an array, it recursively converts each element to a string.
+ * - If the value is an instance of `UnsafeHTML`, it returns its `value`
+ *   property without escaping.
+ * - If the value is `null` or `undefined`, it returns an empty string.
+ *   Otherwise, it converts the value to a string and escapes it.
+ */
 const toString = (v: unknown, currentIndent: number): string => {
   if (v == null) {
     return '';
@@ -30,8 +41,28 @@ const toString = (v: unknown, currentIndent: number): string => {
   return escape(String(v));
 };
 
+/**
+ * Regular expression to match the indentation of the first non-empty line
+ * in a string. It captures the indentation (spaces or tabs) before the first
+ * non-whitespace character after a newline.
+ */
 const indentRegex = /(?:\n)([ \t]*)(?:\S)/g;
 
+/**
+ * Represents a partial HTML template result that can be rendered with
+ * interpolated values. It supports indentation, nested templates, iterables of
+ * values, and escaping of values.
+ *
+ * The `toString()` method returns the rendered HTML as a string, propagating
+ * the indentation level.
+ *
+ * To support streaming HTTP, HTMLPartial is an iterable that yields the strings
+ * or Promises of strings in the correct order for rendering. It's a synchronous
+ * iterable even though it can yield Promises, because synchronous iterables are
+ * much faster than asynchronous iterables, especially if only synchronous
+ * values are being rendered. This means that the consumer of the iterable must
+ * handle any Promises themselves.
+ */
 export class HTMLPartial {
   strings: TemplateStringsArray;
   values: any[];
@@ -103,8 +134,24 @@ const yieldValue = function* (v: unknown): RenderResult {
 };
 
 export type RenderValue = string | Promise<string | RenderResult>;
+
+/**
+ * A rendered value as an iterable of strings or Promises of a RenderResult.
+ *
+ * This type is a synchronous Iterable so that consumers do not have to await
+ * every value according to the JS asynchronous iterator protocol, which would
+ * cause additional overhead compared to a sync iterator.
+ *
+ * Consumers should check the type of each value emitted by the iterator, and
+ * await it if it is a Promise.
+ *
+ * The utility function {@link collectRenderResult} does this for you.
+ */
 export type RenderResult = IterableIterator<RenderValue>;
 
+/**
+ * Joins a RenderResult into a string.
+ */
 export const collectResult = async (
   result: Iterable<RenderValue>,
 ): Promise<string> => {
@@ -116,8 +163,15 @@ export const collectResult = async (
   return value;
 };
 
+/**
+ * Wraps a string in an `UnsafeHTML` object, which indicates that the
+ * string should be rendered as raw HTML without escaping.
+ */
 export const unsafeHTML = (s: string) => new UnsafeHTML(s);
 
+/**
+ * Represents a value that should be rendered as raw HTML without escaping.
+ */
 export class UnsafeHTML {
   value: string;
 
