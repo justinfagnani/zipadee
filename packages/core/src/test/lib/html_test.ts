@@ -79,6 +79,22 @@ suite('html', () => {
     assert.equal(html`${items}`.toString(), 'foobarbaz');
   });
 
+  test('interpolated iterable', async () => {
+    function* getItems() {
+      yield html`<li>${'foo'}</li>`;
+      yield html`<li>${'bar'}</li>`;
+      yield html`<li>${'baz'}</li>`;
+    }
+    assert.equal(
+      // prettier-ignore
+      html`
+        <ul>
+          ${getItems()}
+        </ul>`.toString(),
+      '\n<ul>\n  <li>foo</li><li>bar</li><li>baz</li>\n</ul>',
+    );
+  });
+
   test('unsafeHTML', async () => {
     assert.equal(
       html`<h1>Hello ${unsafeHTML('<span>World</span>')}!</h1>`.toString(),
@@ -128,6 +144,34 @@ suite('html', () => {
           'baz',
           '</li>',
           '\n          </ul>',
+        ],
+      );
+    });
+
+    test('iteration with iterable', async () => {
+      function* getItems() {
+        yield html`<li>${'foo'}</li>`;
+        yield html`<li>${'bar'}</li>`;
+        yield html`<li>${'baz'}</li>`;
+      }
+      assert.deepEqual(
+        // prettier-ignore
+        [...html`
+        <ul>
+          ${getItems()}
+        </ul>`],
+        [
+          '\n        <ul>\n          ',
+          '<li>',
+          'foo',
+          '</li>',
+          '<li>',
+          'bar',
+          '</li>',
+          '<li>',
+          'baz',
+          '</li>',
+          '\n        </ul>',
         ],
       );
     });

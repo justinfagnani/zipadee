@@ -7,7 +7,11 @@
 export const html = (strings: TemplateStringsArray, ...values: any[]) =>
   new HTMLPartial(strings, values);
 
-const toString = (v: any, currentIndent: number): string => {
+const isIterable = (value: unknown): value is Iterable<unknown> =>
+  Array.isArray(value) ||
+  typeof (value as any)?.[Symbol.iterator] === 'function';
+
+const toString = (v: unknown, currentIndent: number): string => {
   if (v == null) {
     return '';
   }
@@ -17,8 +21,8 @@ const toString = (v: any, currentIndent: number): string => {
   if (v instanceof HTMLPartial) {
     return v.toString(currentIndent);
   }
-  if (Array.isArray(v)) {
-    return v.map(toString).join('');
+  if (Array.isArray(v) || isIterable(v)) {
+    return Array.from(v).map(toString).join('');
   }
   if (v instanceof UnsafeHTML) {
     return v.value;
@@ -85,8 +89,10 @@ const yieldValue = function* (v: unknown): RenderResult {
     yield escape(v);
   } else if (v instanceof HTMLPartial) {
     yield* v;
-  } else if (Array.isArray(v)) {
-    yield* yieldArray(v);
+  } else if (Array.isArray(v) || isIterable(v)) {
+    for (const i of v) {
+      yield* yieldValue(i);
+    }
   } else if (v instanceof UnsafeHTML) {
     yield v.value;
   } else if (typeof (v as any).then === 'function') {
@@ -95,20 +101,6 @@ const yieldValue = function* (v: unknown): RenderResult {
     yield escape(String(v));
   }
 };
-
-const yieldArray = function* (array: Array<unknown>): RenderResult {
-  for (const v of array) {
-    yield* yieldValue(v);
-  }
-};
-
-export type HTMLValue =
-  | string
-  | UnsafeHTML
-  | HTMLPartial
-  | HTMLIterator
-  | Promise<HTMLValue>;
-export type HTMLIterator = IterableIterator<string | Promise<HTMLValue>>;
 
 export type RenderValue = string | Promise<string | RenderResult>;
 export type RenderResult = IterableIterator<RenderValue>;
