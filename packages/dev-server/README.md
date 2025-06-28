@@ -15,10 +15,11 @@ zpd [options]
 ```
 
 Options:
--   `--port`, `-p`      The port to listen on. (default: 8080)
--   `--root`, `-r`      Root directory to serve files from. (default: Current working directory)
--   `--base`, `-b`      Base directory to resolve paths and imports from, as a relative path
-                  from the root directory. (default: '')
+
+- `--port`, `-p` The port to listen on. (default: 8080)
+- `--root`, `-r` Root directory to serve files from. (default: Current working directory)
+- `--base`, `-b` Base directory to resolve paths and imports from, as a relative path
+  from the root directory. (default: '')
 
 zpd serves files from the specified root directory (default: cwd).
 

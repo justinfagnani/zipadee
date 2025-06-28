@@ -40,6 +40,6 @@ app.listen();
   prefixed with the `rootPathPrefix` in order to resolve them against the `root`
   directory instead of the `base` directory. Defaults to `'/__root__'`.
 - `extensions`: Array of file extensions to serve. Defaults to `['.js',
-  '.mjs']`. Files not matching these extensions will not be handled by this
+'.mjs']`. Files not matching these extensions will not be handled by this
   middleware. They can be served by other downstream middleware.
 - `conditions`: Array of import conditions to support. Defaults to `['browser', 'import']`.

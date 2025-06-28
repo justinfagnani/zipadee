@@ -53,7 +53,7 @@ suite('App error handling', () => {
     assert.doesNotMatch(response.text, /at /); // stack trace
   });
 
-    test('does send stack for HttpError 4xx in dev', async () => {
+  test('does send stack for HttpError 4xx in dev', async () => {
     using app = new App({dev: true});
     app.use((_req, _res, _next) => {
       throw new HttpError(404, 'Not found', 'Should not leak');

@@ -226,7 +226,7 @@ here's a few of them:
 - [ ] Benchmarks (Use Fastify's? It's maybe too simple)
 - [ ] Body parsers (and JSON Schema validation for JSON bodies?)
 - [ ] `@zipadee/csp` package that makes it easy to set CSP headers and to create
-  nonces and use them in other middleware.
+      nonces and use them in other middleware.
 
   ```ts
   import {getNonce} from '@zipadee/csp';
@@ -237,7 +237,7 @@ here's a few of them:
   ```
 
 - [ ] `@zipadee/etag` (or `@zipadee/cache`?) - easily set ETag header from
-  content. Maybe it could be used by `@zipadee/static`.
+      content. Maybe it could be used by `@zipadee/static`.
 - [ ] http2: test against Node's compatibility layer, offer a switch?
   - Local cert generation for local HTTP/2 dev servers?
 - [ ] `@zipadee/compress` midleware

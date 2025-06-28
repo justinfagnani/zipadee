@@ -1,17 +1,17 @@
 import {HttpError, type Middleware} from '@zipadee/core';
+import {send} from '@zipadee/static';
 import {
   decodePath,
   pathIsHidden,
   resolvePath,
   stat,
 } from '@zipadee/static/lib/utils.js';
-import {send} from '@zipadee/static';
+import resolve from 'enhanced-resolve';
+import {init, parse} from 'es-module-lexer';
+import baseFS from 'fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {parse, init} from 'es-module-lexer';
-// import {moduleResolve, type ErrnoException} from 'import-meta-resolve';
-import resolve from 'enhanced-resolve';
-import baseFS from 'fs';
+import {parseImportAttributes} from './attributes.js';
 
 const {CachedInputFileSystem, ResolverFactory} = resolve;
 
@@ -47,6 +47,12 @@ export interface Options {
    * Array of import conditions to support. Defaults to `['browser', 'import']`.
    */
   conditions?: Array<string>;
+
+  /**
+   * If true, will transform CSS modules and imports with the `type: 'css'`
+   * attribute.
+   */
+  cssModules?: boolean;
 }
 
 // TODO:
@@ -66,16 +72,19 @@ export const serve = (opts: Options): Middleware => {
   const root =
     opts.root === undefined ? process.cwd() : path.resolve(opts.root);
   const base = opts.base === undefined ? root : resolvePath(root, opts.base);
-  const rootPathPrefix = opts.rootPathPrefix ?? '/__root__';
-  const extensions = opts.extensions ?? ['.js', '.mjs'];
-  const conditionsArray = opts.conditions ?? ['browser', 'import'];
-  // const conditions = new Set(conditionsArray);
+
+  const {
+    rootPathPrefix = '/__root__',
+    extensions = ['.js', '.mjs'],
+    conditions = ['browser', 'import'],
+    cssModules = false,
+  } = opts;
 
   const resolver = ResolverFactory.createResolver({
     fileSystem: new CachedInputFileSystem(baseFS, 4000),
     roots: [root, base],
     extensions: ['.js', '.json'],
-    conditionNames: conditionsArray,
+    conditionNames: conditions,
     mainFields: ['module', 'browser', 'main'],
   });
 
@@ -87,13 +96,10 @@ export const serve = (opts: Options): Middleware => {
 
     let filePath = decodePath(req.path);
 
-    const mountedPath = req.url!.pathname.substring(
-      0,
-      req.url!.pathname.length - filePath.length,
-    );
-
     const parsedPath = path.parse(filePath);
-    const transform = extensions.includes(parsedPath.ext);
+    const isCssModule = req.url.searchParams.get('type') === 'css-module';
+
+    const transform = isCssModule || extensions.includes(parsedPath.ext);
 
     if (filePath.startsWith(rootPathPrefix)) {
       filePath = filePath.substring(rootPathPrefix.length);
@@ -120,6 +126,22 @@ export const serve = (opts: Options): Middleware => {
       return;
     }
 
+    if (isCssModule) {
+      const source = await fs.readFile(filePath, 'utf8');
+      res.type = 'text/javascript';
+      res.body = `const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(\`${source.replace(/`/g, '\\`')}\`);
+export default styleSheet;
+`;
+      return;
+    }
+
+    // Derive the mount prefix by removing the request path which mount() sets
+    // from the URL path.
+    const mountPrefix = req.url!.pathname.substring(
+      0,
+      req.url!.pathname.length - req.path.length,
+    );
     const source = await fs.readFile(filePath, 'utf8');
     const [imports, _exports, _facade, _hasModuleSyntax] = parse(
       source,
@@ -129,10 +151,23 @@ export const serve = (opts: Options): Middleware => {
     let lastIndex = 0;
 
     for (const impt of imports) {
-      const {t: type, s: start, e: end, n: unescaped} = impt;
+      const {
+        t: type,
+        s: start,
+        e: specifierEnd,
+        n: unescaped,
+        a: assert,
+        se: importEnd,
+      } = impt;
+
       if (type === 1) {
         // Static import
-        let importSpecifier = unescaped || source.substring(start, end);
+
+        let importSpecifier =
+          unescaped ?? source.substring(start, specifierEnd);
+
+        let resolve = false;
+        let cssImportTransform = false;
 
         let relativeImport = false;
         let absoluteImport = false;
@@ -148,11 +183,29 @@ export const serve = (opts: Options): Middleware => {
             // resolved path to be relative to the current file
             relativeImport = importSpecifier.startsWith('.');
             absoluteImport = importSpecifier.startsWith('/');
-          } else {
-            output += `${source.substring(lastIndex, start)}${importSpecifier}`;
-            lastIndex = end;
-            continue;
+            resolve = true;
           }
+        } else {
+          // If the import is not relative or absolute, we need to resolve it
+          // using the resolver
+          resolve = true;
+        }
+
+        const hasAttributes = assert !== -1;
+        let attributes: Map<string, string> | undefined;
+        if (cssModules && hasAttributes) {
+          const attributesSource = source.slice(assert, importEnd);
+          attributes = parseImportAttributes(attributesSource);
+
+          if (attributes.get('type') === 'css') {
+            cssImportTransform = true;
+          }
+        }
+
+        if (!resolve && !cssImportTransform) {
+          output += `${source.substring(lastIndex, start)}${importSpecifier}`;
+          lastIndex = specifierEnd;
+          continue;
         }
 
         const fileURL = new URL(filePath, 'file://');
@@ -185,31 +238,56 @@ export const serve = (opts: Options): Middleware => {
           throw new HttpError(
             500,
             undefined,
-            `Attempted to resolve import outside of root:\n  root: ${root}\n  resolved: ${resolvedImportPath}`
+            `Attempted to resolve import outside of root:\n  root: ${root}\n  resolved: ${resolvedImportPath}`,
           );
         }
 
-        let resolvedimport: string;
+        let resolvedImport: string;
+
         if (relativeImport) {
-          resolvedimport = path.relative(
+          // For relative imports, we resolve the path relative to the current
+          // file. This keeps the rewritten import as similar as possible to the
+          // original import. Most likely in this case we're just adding a file
+          // extension.
+          resolvedImport = path.relative(
             path.dirname(filePath),
             resolvedImportPath,
           );
-          if (!resolvedimport.startsWith('.')) {
-            resolvedimport = './' + resolvedimport;
+          if (!resolvedImport.startsWith('.')) {
+            resolvedImport = './' + resolvedImport;
           }
         } else if (resolvedImportPath.startsWith(base)) {
-          resolvedimport = resolvedImportPath.substring(base.length);
+          // Imports within the base path are rewritten to be relative to the
+          // mounted path.
+          resolvedImport = resolvedImportPath.substring(base.length);
         } else {
-          resolvedimport = path.join(
-            mountedPath,
+          resolvedImport = path.join(
+            mountPrefix,
             rootPathPrefix,
             resolvedImportPath.substring(root.length),
           );
         }
 
-        output += `${source.substring(lastIndex, start)}${resolvedimport}`;
-        lastIndex = end;
+        if (cssImportTransform) {
+          attributes?.delete('type');
+          let attributesSource = '';
+          if (attributes?.size) {
+            const attrs = Array.from(attributes.entries())
+              .map(([key, value]) => `${key}: '${value}'`)
+              .join(', ');
+            attributesSource = ` with {${attrs}}`;
+          }
+          output +=
+            source.substring(lastIndex, start) +
+            resolvedImport +
+            '?type=css-module' +
+            source.substring(specifierEnd, specifierEnd + 1) +
+            attributesSource;
+          lastIndex = importEnd;
+        } else {
+          output += source.substring(lastIndex, start) + resolvedImport;
+          lastIndex = specifierEnd;
+        }
       }
     }
 

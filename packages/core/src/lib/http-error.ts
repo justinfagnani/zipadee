@@ -4,7 +4,6 @@ import {STATUS_CODES} from 'node:http';
  * An Error class for HTTP errors that includes a status code and a message.
  */
 export class HttpError extends Error {
-
   /**
    * HTTP status code.
    */

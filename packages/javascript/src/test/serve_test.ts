@@ -86,23 +86,54 @@ suite('serve()', () => {
     await request(app.server).get('/bad.js').expect(500);
   });
 
-  test('resolves with import attributes', async () => {
-    using app = new App();
-    app.use(serve({root: 'test/fixtures/', base: 'base'}));
+  suite('import attributes', () => {
+    test('resolves with import attributes', async () => {
+      using app = new App();
+      app.use(serve({root: 'test/fixtures/', base: 'base'}));
 
-    await request(app.server)
-      .get('/import-css.js')
-      .expect(200)
-      .expect('Content-Type', /javascript/)
-      .expect(
-        `import '/__root__/node_modules/foo/styles.css' with {type: 'css'};\n`,
-      );
+      await request(app.server)
+        .get('/import-css.js')
+        .expect(200)
+        .expect('Content-Type', /javascript/)
+        .expect(
+          `import '/__root__/node_modules/foo/styles.css' with {type: 'css'};
+import '/__root__/node_modules/foo/styles.css' with {type: 'css', foo: 'bar'};
+`,
+        );
 
-    await request(app.server)
-      .get('/__root__/node_modules/foo/styles.css')
-      .expect(200)
-      .expect('Content-Type', /css/)
-      .expect(`:root {\n  color: red;\n}\n`);
+      await request(app.server)
+        .get('/__root__/node_modules/foo/styles.css')
+        .expect(200)
+        .expect('Content-Type', /css/)
+        .expect(`:root {\n  color: red;\n}\n`);
+    });
+
+    test.only('transforms css imports', async () => {
+      using app = new App();
+      app.use(serve({root: 'test/fixtures/', base: 'base', cssModules: true}));
+
+      await request(app.server)
+        .get('/import-css.js')
+        .expect(200)
+        .expect('Content-Type', /javascript/)
+        .expect(
+          `import '/__root__/node_modules/foo/styles.css?type=css-module';
+import '/__root__/node_modules/foo/styles.css?type=css-module' with {foo: 'bar'};
+`,
+        );
+
+      await request(app.server)
+        .get('/__root__/node_modules/foo/styles.css?type=css-module')
+        .expect(200)
+        .expect('Content-Type', /javascript/)
+        .expect(`const styleSheet = new CSSStyleSheet();
+styleSheet.replaceSync(\`:root {
+  color: red;
+}
+\`);
+export default styleSheet;
+`);
+    });
   });
 
   test('adds extensions', async () => {
@@ -116,7 +147,7 @@ suite('serve()', () => {
       .expect(`import './good.js';\nimport '/good.js';\n`);
   });
 
-  test('adds extensions', async () => {
+  test('adds extensions out of root', async () => {
     using app = new App();
     app.use(serve({root: 'test/fixtures/', base: 'base'}));
 

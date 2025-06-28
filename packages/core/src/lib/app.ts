@@ -1,13 +1,12 @@
 import * as http from 'node:http';
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import { type Middleware, compose } from './middleware.js';
-import { Response } from './response.js';
-import { Request } from './request.js';
+import type {IncomingMessage, ServerResponse} from 'node:http';
+import {type Middleware, compose} from './middleware.js';
+import {Response} from './response.js';
+import {Request} from './request.js';
 import Cookies from 'cookies';
-import { HttpError } from './http-error.js';
+import {HttpError} from './http-error.js';
 
 export interface Options {
-
   /**
    * If true, trust the X-Forwarded-* headers for proxying. Defaults to false.
    */
@@ -53,7 +52,7 @@ export class App {
     const response = new Response(res, request);
     const composedMiddleware = compose(...this.#middleware);
     try {
-      await composedMiddleware(request, response, async () => { });
+      await composedMiddleware(request, response, async () => {});
       await response.respond();
     } catch (e: unknown) {
       if (e instanceof HttpError) {
@@ -80,9 +79,12 @@ export class App {
         }
         response.baseResponse.statusCode = 500;
         if (this.#devMode && e instanceof Error) {
-          response.baseResponse.setHeader('Content-Type', 'text/plain; charset=utf-8');
+          response.baseResponse.setHeader(
+            'Content-Type',
+            'text/plain; charset=utf-8',
+          );
           response.baseResponse.write(
-            `Internal Server Error\n\n${e.message}\n\n${e.stack}`
+            `Internal Server Error\n\n${e.message}\n\n${e.stack}`,
           );
         }
       }

@@ -1,11 +1,12 @@
-/**
- * Module dependencies.
- */
 import {HttpError} from '@zipadee/core';
 import asyncFs from 'node:fs/promises';
 import path from 'node:path';
 import {join, normalize, resolve, sep, isAbsolute} from 'node:path';
 
+/**
+ * Wraps `decodeURIComponent` and throws an HTTP 400 error if the decoding
+ * fails.
+ */
 export const decodePath = (path: string) => {
   try {
     return decodeURIComponent(path);
