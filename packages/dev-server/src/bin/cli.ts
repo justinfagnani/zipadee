@@ -46,6 +46,16 @@ const parseArgsConfig = {
       default: '',
       defaultDescription: "''",
     },
+    ['css-modules']: {
+      type: 'boolean',
+      help: dedent`
+        Whether to transform CSS modules to JavaScript. If true, CSS imports -
+        imports with a \`type: 'css'\` import attribute - will be transformed to
+        remove the \`type: 'css'\` attribute and add a \`?type=css--module\` query
+        parameter to the URL. Requests for these URLs will be served as JavaScript
+        modules that export the CSS as a CSSStyleSheet object.`,
+      default: false,
+    },
     help: {
       type: 'boolean',
       default: false,
@@ -123,10 +133,14 @@ export const run = async () => {
     return;
   }
   const port = parseInt(args.values.port);
+
+  console.log('css-modules:', args.values['css-modules']);
+
   await startServer({
     port,
     rootDir: args.values.root,
     baseDir: args.values.base,
+    cssModules: args.values['css-modules'],
   });
 };
 

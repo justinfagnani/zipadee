@@ -20,6 +20,12 @@ Options:
 - `--root`, `-r` Root directory to serve files from. (default: Current working directory)
 - `--base`, `-b` Base directory to resolve paths and imports from, as a relative path
   from the root directory. (default: '')
+- `--css-modules` Whether to transform CSS modules to JavaScript.
+
+  If true, CSS imports - imports with a `type: 'css'` import attribute - will be transformed to remove the `type: 'css'` attribute and add a `?type=css--module` query parameter to the URL.
+  
+  Requests for these URLs will be served as JavaScript modules that export the CSS as a CSSStyleSheet object. (default: false)
+- `--help`          Show the help message (default: false)
 
 zpd serves files from the specified root directory (default: cwd).
 
