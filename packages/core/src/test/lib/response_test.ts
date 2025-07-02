@@ -1,10 +1,10 @@
-import {describe as suite, test} from 'node:test';
 import * as assert from 'node:assert';
+import {Readable} from 'node:stream';
+import {ReadableStream} from 'node:stream/web';
+import {describe as suite, test} from 'node:test';
 import request from 'supertest';
 import {App} from '../../index.js';
 import {html} from '../../lib/html.js';
-import {ReadableStream} from 'stream/web';
-import {Readable} from 'node:stream';
 
 suite('Response', () => {
   test('can accept a string as body', async () => {
@@ -195,6 +195,20 @@ suite('Response', () => {
     const response = await request(app.server).get('/');
     assert.equal(response.status, 200);
     // assert.equal(response.get('Content-Length'), undefined);
+  });
+
+  test('can redirect to a relative URL', async () => {
+    using app = new App();
+    app.use((_req, res, _next) => {
+      // Note: A "relative URL" looks like an absolute path. It's only missing
+      // the protocol and host.
+      res.redirect('/redirected');
+    });
+    await app.listen();
+
+    const response = await request(app.server).get('/');
+    assert.equal(response.status, 302);
+    assert.equal(response.headers.location, '/redirected');
   });
 });
 

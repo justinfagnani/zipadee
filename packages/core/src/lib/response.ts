@@ -173,8 +173,11 @@ export class Response {
     if (url === Response.BACK) {
       url = this.#req.getSingleHeader('Referer') ?? alt;
     }
-    if (typeof url === 'string') {
-      url = new URL(url, this.#req.baseRequest.url);
+    if (
+      typeof url === 'string' &&
+      (url.startsWith('./') || url.startsWith('../'))
+    ) {
+      url = new URL(url, this.#req.url);
     }
     this.setHeader('Location', url.toString());
 
