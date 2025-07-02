@@ -2,6 +2,7 @@ import type {IncomingMessage} from 'node:http';
 import accepts from 'accepts';
 import type Cookies from 'cookies';
 import type {TLSSocket} from 'node:tls';
+import {Readable} from 'node:stream';
 
 export type HttpMethod =
   | 'GET'
@@ -121,5 +122,19 @@ export class Request {
 
   set path(value: string | undefined) {
     this.#path = value;
+  }
+
+  // TODO: Add bodyUsed
+  get body(): ReadableStream<Uint8Array> {
+    return Readable.toWeb(this.#req);
+  }
+
+  async text(): Promise<string> {
+    const decoder = new TextDecoder();
+    let body = '';
+    for await (const chunk of this.body) {
+      body += decoder.decode(chunk);
+    }
+    return body;
   }
 }
