@@ -1,7 +1,7 @@
 {
   "name": "@zipadee/dev-server",
   "description": "A lightweight development server for modern web apps.",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -61,11 +61,11 @@
     }
   },
   "dependencies": {
-    "@zipadee/core": "^0.0.17",
-    "@zipadee/cors": "^0.0.17",
-    "@zipadee/javascript": "^0.0.17",
-    "@zipadee/router": "^0.0.17",
-    "@zipadee/static": "^0.0.17"
+    "@zipadee/core": "0.0.19",
+    "@zipadee/cors": "0.0.19",
+    "@zipadee/javascript": "0.0.19",
+    "@zipadee/router": "0.0.19",
+    "@zipadee/static": "0.0.19"
   },
   "devDependencies": {
     "@types/node": "^22.15.17",
