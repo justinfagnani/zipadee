@@ -18,3 +18,9 @@ app.use(router.routes());
 
 app.listen();
 ```
+
+## Performance
+
+`@zipadee/router` uses
+[`url-pattern-list`](https://npmjs.com/package/url-pattern-list) for fast
+matching of URLs against even large lists of URLPatterns.

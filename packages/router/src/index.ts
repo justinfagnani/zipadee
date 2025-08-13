@@ -1,7 +1,6 @@
 import type {Middleware, NextFunction, Request, Response} from '@zipadee/core';
 import {URLPattern} from 'urlpattern-polyfill';
-import {URLPatternList} from './lib/url-pattern-list.js';
-import type {URLPatternListMatch} from './lib/url-pattern-list.js';
+import {URLPatternList, type URLPatternListMatch} from 'url-pattern-list';
 
 export type RouterMiddleware = (
   req: Request,
