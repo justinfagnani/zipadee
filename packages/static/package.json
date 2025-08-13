@@ -1,6 +1,6 @@
 {
   "name": "@zipadee/static",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -53,6 +53,6 @@
     }
   },
   "dependencies": {
-    "@zipadee/core": "0.0.19"
+    "@zipadee/core": "^0.0.20"
   }
 }
