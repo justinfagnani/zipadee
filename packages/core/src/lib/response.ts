@@ -1,10 +1,10 @@
-import {type ServerResponse, STATUS_CODES} from 'node:http';
 import {getType} from 'cache-content-type';
-import type {Request} from './request.js';
-import {Stream} from 'stream';
-import {HTMLPartial, type RenderValue} from './html.js';
+import {type ServerResponse, STATUS_CODES} from 'node:http';
+import {Duplex, Readable} from 'node:stream';
 import {ReadableStream} from 'node:stream/web';
-import {Readable, Duplex} from 'node:stream';
+import {Stream} from 'stream';
+import {HTMLPartial, pipeToWritable} from './html.js';
+import type {Request} from './request.js';
 
 export class Response {
   static readonly BACK = Symbol('Response.BACK');
@@ -73,28 +73,10 @@ export class Response {
       if (!this.hasHeader('Content-Type')) {
         this.type = 'html';
       }
+      // Unless we can detect the MTU, use a flush size slightly below that of
+      // typical Ethernet (1500 bytes) to optimize for latency.
 
-      const writeResult = async (
-        result: Iterable<RenderValue>,
-      ): Promise<void> => {
-        // TODO: Should we cork the response until we see a Promise?
-        for (const chunk of result) {
-          if (typeof chunk === 'string') {
-            this.#res.write(chunk);
-          } else {
-            const v = await chunk;
-            if (typeof v === 'string') {
-              this.#res.write(v);
-            } else {
-              await writeResult(v);
-            }
-          }
-        }
-      };
-
-      await writeResult(value);
-      // const text = value.toString();
-      // this.length = Buffer.byteLength(text);
+      await pipeToWritable(value, this.#res, {flushSize: 1024});
       this.#res.end();
       return;
     }

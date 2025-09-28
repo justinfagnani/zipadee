@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
-import {startServer} from '../index.js';
+import dedent from 'dedent';
 import {
   parseArgs,
   type ParseArgsConfig,
   type ParseArgsOptionDescriptor,
 } from 'node:util';
-
-import dedent from 'dedent';
+import {startServer} from '../index.js';
 
 interface ParseArgsOptionDescriptorWithHelp extends ParseArgsOptionDescriptor {
   help?: string;
@@ -133,8 +132,6 @@ export const run = async () => {
     return;
   }
   const port = parseInt(args.values.port);
-
-  console.log('css-modules:', args.values['css-modules']);
 
   await startServer({
     port,

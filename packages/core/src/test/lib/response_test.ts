@@ -117,6 +117,27 @@ suite('Response', () => {
     assert.equal(response.text, '<h1>Hello World!</h1>');
   });
 
+  test('escapes values in an HTML template', async () => {
+    using app = new App();
+    app.use(async (_req, res, _next) => {
+      res.body = html`<h1>Hello ${'<script>alert("XSS")</script>'}!</h1>`;
+    });
+
+    await app.listen();
+
+    const response = await request(app.server).get('/');
+
+    assert.equal(response.status, 200);
+    assert.strictEqual(
+      response.headers['content-type'],
+      'text/html; charset=utf-8',
+    );
+    assert.equal(
+      response.text,
+      '<h1>Hello &lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;!</h1>',
+    );
+  });
+
   test('can accept an async HTML template as body', async () => {
     using app = new App();
     app.use(async (_req, res, _next) => {
