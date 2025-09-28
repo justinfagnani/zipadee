@@ -1,6 +1,6 @@
 {
   "name": "@zipadee/javascript",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -57,8 +57,8 @@
     }
   },
   "dependencies": {
-    "@zipadee/core": "^0.0.20",
-    "@zipadee/static": "^0.0.20",
+    "@zipadee/core": "^0.0.21",
+    "@zipadee/static": "^0.0.21",
     "dedent": "^1.6.0",
     "enhanced-resolve": "^5.17.1",
     "es-module-lexer": "^1.5.4"
