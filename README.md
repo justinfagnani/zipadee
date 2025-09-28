@@ -1,6 +1,7 @@
 # Zipadee
 
-Zipadee is a simple Node HTTP server with middleware.
+Zipadee is a simple Node HTTP server that aims to be **Safe**, **Fast**, and
+**Easy to Use**.
 
 > [!CAUTION]
 > Zipadee is very early, under construction, will change a lot, and may never be sufficiently maintained for any level of use. If you want to try it, please consider contributing!
@@ -13,18 +14,20 @@ Zipadee is a simple Node HTTP server with middleware.
 
 Zipadee is inspired by Koa and Express, with the following goals:
 
-- Ergonomic: Usability improvements on raw Node HTTP APIs
-- Familiar: App and Middleware similar to Express and Koa
-- Simple: A small API over Node HTTP
+- Safe: The easiest way to respond with HTML is escaped by default to protect
+  against XSS
 - Lightweight: Minimal features and dependencies
+- Fase: Highly optimized routing and template rendering. VM friendly code.
+- Ergonomic: Usability improvements on raw Node HTTP APIs
+- Familiar: App and Middleware APIs similar to Express and Koa
+- Simple: A small API over Node HTTP
 - Great TypeScript support:
   - Written in TypeScript so typings are always included and accurate
   - Objects have fixed shapes that are easy to type
-- Safe: The easiest way to respond with HTML is escaped by default to protect
-  against XSS
 - Convenient: The most common needs are easy to address, whether with a built-in
   feature or first-class middleware.
 
+#### Hello World Example:
 ```ts
 import {App, html} from 'zipadee';
 
@@ -95,18 +98,18 @@ app.use(async (req, res) => {
 ##### Use functions instead of middleware
 
 Request body parsing is commonly done with middleware, but to pass the parsed
-request body to downstream middleware, parsers usually modify the Request
-object. This reads the body stream before other middleware can, and changes the
-type of the body (say to JSON). Given that these changes cna cause downstream
-bugs, Zipadee encourages using simple functions instead. Middleware that needs
-to parse the request body as JSON can just use a function:
+request body to downstream middleware, parsers for Koa or Express often modify
+the Request object. This reads the body stream before other middleware can, and
+changes the type of the body (say to JSON). Given that these changes can cause
+downstream bugs, Zipadee encourages using simple functions instead. Middleware
+that needs to parse the request body as JSON can just use a function:
 
 ```ts
 import {parseBody} from 'some-body-parser';
 
 app.use(async (req, res, next) => {
   const json = await parseBody(req);
-  //     ^ this is typed nicely as a JSON object. No guessing
+  //    ^ this is typed nicely as a JSON object. No guessing
 });
 ```
 
@@ -198,7 +201,22 @@ a Request's URL object, but the Request's `path`, so all middleware should use
 the `path` property to make sure that it can be mounted properly. Because of how
 important that is, `mount()` is built-in.
 
-### First-party middleware and utilities
+## What (should) make Zipadee fast?
+
+- Fixed object shapes and known object types: No context. No replacement or
+  patching of request or response objects.
+- Highly optimized routing. `@zipadee/router` uses
+  [`url-pattern-list`](https://www.npmjs.com/package/url-pattern-list) which
+  matches URLs against a collection of patterns use an efficient prefix-tree.
+- Optimized streaming of `html` templates. `html` templates avoid generators and
+  iterators and write directly into Node streams for the lowest possible
+  overhead.
+
+It's imporant to note however, that there are no formal benchmarks in the
+Zipadee repo, and we need to have those to verify these optimizations and make
+concrete performance claims.
+
+## First-party middleware and utilities
 
 This monorepo contains several useful utilities as separate packages:
 
@@ -241,4 +259,4 @@ here's a few of them:
 - [ ] http2: test against Node's compatibility layer, offer a switch?
   - Local cert generation for local HTTP/2 dev servers?
 - [ ] `@zipadee/compress` midleware
-- [ ] `@zipadee/trpc` midleware
+- [x] `@zipadee/trpc` midleware
