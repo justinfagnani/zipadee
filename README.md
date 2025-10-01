@@ -4,23 +4,26 @@ Zipadee is a simple Node HTTP server that aims to be **Safe**, **Fast**, and
 **Easy to Use**.
 
 > [!CAUTION]
-> Zipadee is very early, under construction, will change a lot, and may never be sufficiently maintained for any level of use. If you want to try it, please consider contributing!
+> Zipadee is very early, under construction, will change a lot, and may never be
+> sufficiently maintained for any level of use. If you want to try it, please
+> consider contributing!
 
 > [!IMPORTANT]
+>
 > I'm looking for collaborators for Zipadee! I don't have enough time to make
 > Zipadee a well-supported project on my own, and I can't possibly use it in
 > enough different cases to shake out all of the basic features and initial
-> bugs. It the goals and principles of the project speak to you, reach out!
+> bugs. If the goals and principles of the project speak to you, reach out!
 
 Zipadee is inspired by Koa and Express, with the following goals:
 
 - Safe: The easiest way to respond with HTML is escaped by default to protect
   against XSS
 - Lightweight: Minimal features and dependencies
-- Fase: Highly optimized routing and template rendering. VM friendly code.
+- Fast: Highly optimized routing and template rendering. VM friendly code.
 - Ergonomic: Usability improvements on raw Node HTTP APIs
 - Familiar: App and Middleware APIs similar to Express and Koa
-- Simple: A small API over Node HTTP
+- Simple: A small layer over Node's HTTP API
 - Great TypeScript support:
   - Written in TypeScript so typings are always included and accurate
   - Objects have fixed shapes that are easy to type
@@ -48,11 +51,38 @@ app.use(async (req, res) => {
 app.listen(8080);
 ```
 
+## Performance
+
+Initial benchmarks (using Fastify's benchmark, for now) show that Zipadee is
+neck-and-neck with Fastify, one of the fasted Node web servers out there.
+
+|            | Version | Requests/s | Latency (ms) | Throughput/Mb |
+|:-----------|:------- |:---------- | :----------- | :------------ |
+| fastify    | 5.6.1   | 109446.4   | 8.63         | 19.62         |
+| zipadee    | 0.0.21  | 108084.8   | 8.77         | 20.00         |
+| koa        | 3.0.1   | 89817.6    | 10.64        | 16.02         |
+| koa-router | 14.0.0  | 84689.6    | 11.32        | 15.10         |
+| express    | 5.1.0   | 68682.4    | 14.07        | 12.25         |
+
+This is just the very first benchmark run, and the Fastify benchmark is very
+simple. It's possible that there are more optimizations to be made.
+
+### What makes Zipadee fast?
+
+- Fixed object shapes and known object types: No context. No replacement or
+  patching of request or response objects.
+- Highly optimized routing. `@zipadee/router` uses
+  [`url-pattern-list`](https://www.npmjs.com/package/url-pattern-list) which
+  matches URLs against a collection of patterns using an efficient prefix-tree.
+- Optimized streaming of `html` templates. `html` templates avoid generators and
+  iterators and write directly into Node streams for the lowest possible
+  overhead.
+
 ## Principles and features
 
 ### Fixed object shapes
 
-One of the biggest differences from Koa, and other web server frameworks as
+One of the biggest differences from Koa, and many other web server frameworks as
 well, is that Zipadee doesn't encourage middleware to change the shape of
 objects as a standard way of passing data between middleware or plugins -
 whether adding new properties to objects or changing the types of properties.
@@ -60,9 +90,9 @@ whether adding new properties to objects or changing the types of properties.
 Changing object shapes are hard for everything that deals with code to
 handle well: VMs, compilers and type-checkers, and humans.
 
-For instance, in other server frameworks, middleware will often add new
+For instance, in some other server frameworks, middleware will often add new
 properties to a context object. Later middleware will access those properties,
-and only work if the other middleware is present, but there's very little to
+and only work if the first middleware is present, but there's very little to
 tell code readers about that dependency.
 
 Zipadee doesn't have a context object, but instead encourages middleware that
@@ -120,7 +150,7 @@ the result in a WeakMap.
 
 Zipadee aims to have safe default behavior. Part of this is treating all text
 responses as plain text by default, and only responding with a MIME type of
-`text/html` (or other) if the developer specifically sets the type, or uses the
+`text/html` (or other) if the developer specifically sets the type or uses the
 built-in `html` template tag.
 
 ```ts
@@ -158,7 +188,7 @@ the need for a separate HTML template system like Liquid or Nunjucks:
   `arr.join('')`, and supports streaming.
 - Pretty-ish-printing: Templates can be automatically dedented and nested
   templates re-indented when a nicer looking output is desired.
-- Asynchronous templates with streaming support: Zipadee streams each chunk of a
+- Streaming and asynchronous template support: Zipadee streams each chunk of a
   template as its ready, and automatically waits for Promises in the stream.
 
   ```ts
@@ -187,7 +217,7 @@ the need for a separate HTML template system like Liquid or Nunjucks:
 requires parsing the HTML templates, so it's still possible to create unsafe
 attribute values like `javascript:...`.
 
-### Core utilities included
+### Batteries included
 
 Utilities like `compose()` and `mount()` are core to using middleware correctly,
 and help define some of the semantics of middleware, so they are built-in to
@@ -201,25 +231,12 @@ a Request's URL object, but the Request's `path`, so all middleware should use
 the `path` property to make sure that it can be mounted properly. Because of how
 important that is, `mount()` is built-in.
 
-## What (should) make Zipadee fast?
-
-- Fixed object shapes and known object types: No context. No replacement or
-  patching of request or response objects.
-- Highly optimized routing. `@zipadee/router` uses
-  [`url-pattern-list`](https://www.npmjs.com/package/url-pattern-list) which
-  matches URLs against a collection of patterns use an efficient prefix-tree.
-- Optimized streaming of `html` templates. `html` templates avoid generators and
-  iterators and write directly into Node streams for the lowest possible
-  overhead.
-
-It's imporant to note however, that there are no formal benchmarks in the
-Zipadee repo, and we need to have those to verify these optimizations and make
-concrete performance claims.
-
 ## First-party middleware and utilities
 
 This monorepo contains several useful utilities as separate packages:
 
+- [zipadee](./packages/zipadee/README.md): A convenience package that re-exports
+  core, cors, router, and static.
 - [@zipadee/core](./packages/core/README.md): The core web server
 - [@zipadee/cors](./packages/cors/README.md): CORS middleware
 - [@zipadee/dev-server](./packages/dev-server/README.md): A simple dev server
@@ -230,8 +247,6 @@ This monorepo contains several useful utilities as separate packages:
 - [@zipadee/static](./packages/static/README.md): Static file serving middleware
   and utilities
 - [@zipadee/trpc](./packages/trpc/README.md): tRPC middleware
-- [zipadee](./packages/zipadee/README.md): A convenience package that re-exports
-  core, cors, router, and static.
 
 ## TODO
 
