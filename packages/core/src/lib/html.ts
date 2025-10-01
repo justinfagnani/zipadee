@@ -292,12 +292,12 @@ export const pipeToWritable = async (
       state.index++;
 
       if (isEven) {
-        const buffer = Buffer.from(container.strings[i], 'utf-8');
-        writeSize += buffer.length;
+        const string = container.strings[i];
+        writeSize += Buffer.byteLength(string, 'utf-8');
         // Even indices are always strings. There is always one more string
         // than value, so we can always yield the string at this index and if
         // it's the last string, we'll yield a done result next time.
-        writable.write(buffer);
+        writable.write(string);
         continue;
       }
 
