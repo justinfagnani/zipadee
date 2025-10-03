@@ -1,0 +1,65 @@
+{
+  "name": "@zipadee/compress",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "keywords": [
+    "zipadee",
+    "compress",
+    "gzip",
+    "brotli",
+    "deflate",
+    "middleware"
+  ],
+  "author": "",
+  "homepage": "https://github.com/justinfagnani/zipadee#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justinfagnani/zipadee.git",
+    "directory": "packages/compress"
+  },
+  "license": "MIT",
+  "description": "Compression middleware for Zipadee",
+  "files": [
+    "/index.{d.ts.map,d.ts,js.map,js}",
+    "/lib/"
+  ],
+  "dependencies": {
+    "compressible": "^2.0.18"
+  },
+  "devDependencies": {
+    "@types/compressible": "^2.0.3",
+    "@types/node": "^22.15.17",
+    "@types/supertest": "^6.0.2",
+    "supertest": "^7.0.0"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --pretty",
+      "dependencies": [
+        "../core:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "index.{js,js.map,d.ts,d.ts.map}",
+        ".tsbuildinfo",
+        "lib",
+        "test"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "command": "node --enable-source-maps --test --test-reporter=spec \"test/**/*_test.js\"",
+      "dependencies": [
+        "build"
+      ]
+    }
+  }
+}

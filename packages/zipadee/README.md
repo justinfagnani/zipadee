@@ -273,5 +273,5 @@ here's a few of them:
       content. Maybe it could be used by `@zipadee/static`.
 - [ ] http2: test against Node's compatibility layer, offer a switch?
   - Local cert generation for local HTTP/2 dev servers?
-- [ ] `@zipadee/compress` midleware
+- [x] `@zipadee/compress` midleware
 - [x] `@zipadee/trpc` midleware
