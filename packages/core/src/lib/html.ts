@@ -301,7 +301,7 @@ export const pipeToWritable = async (
         continue;
       }
 
-      done = index > container.values.length;
+      done = i >= container.values.length;
       value = container.values[i];
     } else if (kind === 'array') {
       done = index >= container.length;

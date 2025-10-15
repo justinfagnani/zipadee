@@ -1,3 +1,4 @@
+import dedent from 'dedent';
 import * as assert from 'node:assert';
 import {Readable} from 'node:stream';
 import {ReadableStream} from 'node:stream/web';
@@ -115,6 +116,32 @@ suite('Response', () => {
     );
     // assert.strictEqual(response.headers['content-length'], '21');
     assert.equal(response.text, '<h1>Hello World!</h1>');
+  });
+
+  test('can accept an HTML template with nested templates', async () => {
+    using app = new App();
+    app.use(async (_req, res, _next) => {
+      res.body = html`<h1>Hello ${'World'}!</h1>
+        <p>${html`CONTENT`}</p>`;
+    });
+
+    await app.listen();
+
+    const response = await request(app.server).get('/');
+
+    assert.equal(response.status, 200);
+    assert.strictEqual(
+      response.headers['content-type'],
+      'text/html; charset=utf-8',
+    );
+    // assert.strictEqual(response.headers['content-length'], '21');
+    assert.equal(
+      dedent(response.text),
+      dedent`
+        <h1>Hello World!</h1>
+        <p>CONTENT</p>
+      `,
+    );
   });
 
   test('escapes values in an HTML template', async () => {
