@@ -1,0 +1,54 @@
+name: 🚀 Feature request
+description: Request a new feature for Zipadee or a Zipadee library/tool.
+labels: [feature request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an idea to make Zipadee better.
+        
+        Please provide as much information as you can in the form below.
+  - type: checkboxes
+    attributes:
+      options:
+        - label: This is not a substantial change
+          required: true
+  - type: dropdown
+    id: affected
+    validations:
+      required: true
+    attributes:
+      label: Which package is this a feature request for?
+      multiple: true
+      description: Note you can select more than one.
+      options:
+        - Core (@zipadee/core)
+        - Cors (@zipadee/cors)
+        - Dev Server (@zipadee/dev-server)
+        - JavaScript (@zipadee/javascript)
+        - Router (@zipadee/router)
+        - Static (@zipadee/static)
+        - Trpc (@zipadee/trpc)
+        - Other/unknown (please mention in description)
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Description
+      description: |
+        Please describe the feature request in as much detail as possible, including examples of how you would use the new feature.
+  - type: textarea
+    id: problem_to_solve
+    validations:
+      required: true
+    attributes:
+      label: What is the problem this feature will solve?
+  - type: textarea
+    id: alternatives
+    validations:
+      required: true
+    attributes:
+      label: What alternatives have you considered?
+      description: |
+        Please describe any alternatives or workarounds you have considered that could be used instead of this feature.
