@@ -19,7 +19,7 @@ import {send, serve} from '@zipadee/static';
 const app = new App();
 
 // Serves all files in the directory {cwd}/files/
-app.use(serve({root: 'files'}));
+app.use(serve('files', {root: 'files'}));
 
 app.use(async (req, res, next) => {
   if (req.path === '/hello') {
