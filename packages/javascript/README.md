@@ -43,3 +43,6 @@ app.listen();
 '.mjs']`. Files not matching these extensions will not be handled by this
   middleware. They can be served by other downstream middleware.
 - `conditions`: Array of import conditions to support. Defaults to `['browser', 'import']`.
+- `cssModules`: If true, will transform CSS modules and imports with the
+  `type: 'css'` attribute. Defaults to `false`.
+- `hidden`: Allow transfer of hidden files. Defaults to `false`.

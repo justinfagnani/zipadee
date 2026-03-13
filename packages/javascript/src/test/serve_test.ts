@@ -157,4 +157,24 @@ export default styleSheet;
       .expect('Content-Type', /javascript/)
       .expect(`import '/__root__/node_modules/module-field/index.mjs';\n`);
   });
+
+  suite('hidden files', () => {
+    test('does not serve hidden files by default', async () => {
+      using app = new App();
+      app.use(serve({root: 'test/fixtures/', base: 'base'}));
+
+      await request(app.server).get('/.hidden.js').expect(404);
+    });
+
+    test('serves hidden files when hidden: true', async () => {
+      using app = new App();
+      app.use(serve({root: 'test/fixtures/', base: 'base', hidden: true}));
+
+      await request(app.server)
+        .get('/.hidden.js')
+        .expect(200)
+        .expect('Content-Type', /javascript/)
+        .expect(`console.log('hidden');\n`);
+    });
+  });
 });

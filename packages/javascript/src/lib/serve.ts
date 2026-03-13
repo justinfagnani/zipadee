@@ -53,6 +53,11 @@ export interface Options {
    * attribute.
    */
   cssModules?: boolean;
+
+  /**
+   * Allow transfer of hidden files. (defaults to false)
+   */
+  hidden?: boolean;
 }
 
 // TODO:
@@ -78,6 +83,7 @@ export const serve = (opts: Options): Middleware => {
     extensions = ['.js', '.mjs'],
     conditions = ['browser', 'import'],
     cssModules = false,
+    hidden: serveHiddenPaths = false,
   } = opts;
 
   const resolver = ResolverFactory.createResolver({
@@ -110,7 +116,7 @@ export const serve = (opts: Options): Middleware => {
       filePath = resolvePath(base, filePath);
     }
 
-    if (pathIsHidden(root, filePath)) {
+    if (!serveHiddenPaths && pathIsHidden(root, filePath)) {
       return await next();
     }
 
