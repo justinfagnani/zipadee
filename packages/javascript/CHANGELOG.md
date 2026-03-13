@@ -1,5 +1,11 @@
 # @zipadee/javascript
 
+## 0.0.23
+
+### Patch Changes
+
+- 248ddcf: Add hidden option to allow serving of hidden files
+
 ## 0.0.22
 
 ### Patch Changes
