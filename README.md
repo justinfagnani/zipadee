@@ -31,6 +31,7 @@ Zipadee is inspired by Koa and Express, with the following goals:
   feature or first-class middleware.
 
 #### Hello World Example:
+
 ```ts
 import {App, html} from 'zipadee';
 
@@ -57,7 +58,7 @@ Initial benchmarks (using Fastify's benchmark, for now) show that Zipadee is
 neck-and-neck with Fastify, one of the fasted Node web servers out there.
 
 |            | Version | Requests/s | Latency (ms) | Throughput/Mb |
-|:-----------|:------- |:---------- | :----------- | :------------ |
+| :--------- | :------ | :--------- | :----------- | :------------ |
 | fastify    | 5.6.1   | 109446.4   | 8.63         | 19.62         |
 | zipadee    | 0.0.21  | 108084.8   | 8.77         | 20.00         |
 | koa        | 3.0.1   | 89817.6    | 10.64        | 16.02         |
@@ -237,6 +238,7 @@ This monorepo contains several useful utilities as separate packages:
 
 - [zipadee](./packages/zipadee/README.md): A convenience package that re-exports
   core, cors, router, and static.
+- [@zipadee/compress](./packages/compress/README.md): Compression middleware
 - [@zipadee/core](./packages/core/README.md): The core web server
 - [@zipadee/cors](./packages/cors/README.md): CORS middleware
 - [@zipadee/dev-server](./packages/dev-server/README.md): A simple dev server
