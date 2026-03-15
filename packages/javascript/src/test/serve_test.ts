@@ -175,6 +175,12 @@ export default styleSheet;
         .expect(200)
         .expect('Content-Type', /javascript/)
         .expect(`console.log('hidden');\n`);
+
+      await request(app.server)
+        .get('/.hidden.css')
+        .expect(200)
+        .expect('Content-Type', /css/)
+        .expect(`body {\n  color: red;\n}\n`);
     });
   });
 });

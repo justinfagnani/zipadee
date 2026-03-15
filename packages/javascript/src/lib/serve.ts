@@ -128,7 +128,7 @@ export const serve = (opts: Options): Middleware => {
 
     if (!transform) {
       const relativePath = path.relative(root, filePath);
-      await send(req, res, relativePath, {root});
+      await send(req, res, relativePath, {root, hidden: serveHiddenPaths});
       return;
     }
 
