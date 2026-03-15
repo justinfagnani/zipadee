@@ -1,5 +1,11 @@
 # @zipadee/javascript
 
+## 0.0.24
+
+### Patch Changes
+
+- 0803056: Forward hidden option to send() middleware to support serving hidden non-JS files
+
 ## 0.0.23
 
 ### Patch Changes
