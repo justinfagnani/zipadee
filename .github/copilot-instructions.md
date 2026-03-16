@@ -245,10 +245,12 @@ app.use(router.routes());
 import {serve, send} from '@zipadee/static';
 
 // Serve directory
-app.use(serve({
-  root: './public',
-  index: 'index.html'
-}));
+app.use(
+  serve('./public', {
+    root: './public',
+    index: 'index.html',
+  }),
+);
 
 // Send individual file
 app.use(async (req, res) => {
